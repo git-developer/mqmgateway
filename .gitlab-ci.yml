@@ -16,7 +16,7 @@ read_application_tags:
     - labels
   script:
   - set -euo pipefail
-  - run() { docker run --rm "${IMAGE_NAME}:${BUILD_CACHE}" sh -c "${@}"; }
+  - run() { docker run --rm --entrypoint /bin/sh "${IMAGE_NAME}:${BUILD_CACHE}" -c "${@}"; }
 
   - COMMIT_DATE="$(run '[ ! -r /opt/metadata/commit_date ] || cut -d " " -f 1 </opt/metadata/commit_date')"
   - COMMIT_SHORT_SHA="$(run '[ ! -r /opt/metadata/commit_short_sha ] || cat /opt/metadata/commit_short_sha')"

@@ -5,12 +5,13 @@ RUN apt-get update && apt-get install -y \
       libboost-dev libboost-log-dev libboost-program-options-dev libmodbus-dev libmosquittopp-dev libyaml-cpp-dev rapidjson-dev catch2
 ARG REPO_URL=https://github.com/BlackZork/mqmgateway.git
 ARG REPO_BRANCH
+ARG SKIP_TESTS
 RUN git clone --single-branch -c advice.detachedHead=false \
       ${REPO_BRANCH:+--branch "${REPO_BRANCH}"} "${REPO_URL}" "/opt/mqmgateway/source"
-RUN cmake -DCMAKE_INSTALL_PREFIX:PATH=/opt/mqmgateway/install \
+RUN cmake -DCMAKE_INSTALL_PREFIX:PATH=/opt/mqmgateway/install ${SKIP_TESTS:+-DWITHOUT_TESTS=1} \
       -S /opt/mqmgateway/source \
       -B /opt/mqmgateway/build && \
-    cd /opt/mqmgateway/build && make -j$(($(nproc)-1)) && make install
+    cd /opt/mqmgateway/build && make -j$(nproc) && make install
 
 FROM debian:stable-slim AS runtime
 COPY --from=builder /opt/mqmgateway/install/ /usr/

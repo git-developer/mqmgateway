@@ -12,7 +12,7 @@ Main features:
   * registers from different slaves combined as single JSON list/object
 * Full control over modbus data polling
   * read multiple register values once for multiple topics
-  * read multiple register values for a single topic one by one 
+  * read multiple register values for a single topic one by one
   * read multiple register values for a single topic once
   * registers used in multiple MQTT topics are polled only once
 * Data conversion:
@@ -20,7 +20,7 @@ Main features:
   * multiple registers values to single MQTT value converters
   * support for [exprtk](https://github.com/ArashPartow/exprtk) expressions language when converting data
   * support for custom conversion plugins
-  * support for converstion in both directions
+  * support for conversion in both directions
 * Fast modbus frequency polling, configurable per newtork, per mqtt object and per register
 
 MQMGateway depends on [libmodbus](https://libmodbus.org/) and [Mosqutto](https://mosquitto.org/) MQTT library. See main [CMakeLists.txt](link) for full list of dependencies. It is developed under Linux, but it should be easy to port it to other platforms.
@@ -30,11 +30,11 @@ This software is dual-licensed:
   * under the terms of [AGPL-3.0 license](https://www.gnu.org/licenses/agpl-3.0.html) as Open Source project.
   * under commercial license.
 
-For a commercial-friendly license and support please see http://mqmgateway.zork.pl. 
+For a commercial-friendly license and support please see http://mqmgateway.zork.pl.
 
 # Third-party licenses
 
-This software includes "A single-producer, single-consumer lock-free queue for C++" written by 
+This software includes "A single-producer, single-consumer lock-free queue for C++" written by
 Cameron Desrochers. See license terms in [LICENSE.md](readerwriterqueue/LICENSE.md)
 
 # Installation
@@ -52,7 +52,7 @@ Cameron Desrochers. See license terms in [LICENSE.md](readerwriterqueue/LICENSE.
 
     ```
     cmake -DCMAKE_INSTALL_PREFIX:PATH=/usr -S (project dir) -B (build dir)
-    make 
+    make
     make install
     ```
 
@@ -157,7 +157,7 @@ Modbus network configuration parameters are listed below:
 
 * **poll_groups**
 
-    An optional list of modbus register address ranges that will be polled with a single modbus_read_registers(3) call. 
+    An optional list of modbus register address ranges that will be polled with a single modbus_read_registers(3) call.
 
 ## MQTT section
 
@@ -165,7 +165,7 @@ The mqtt section contains broker definition and modbus register mappings. Mappin
 
 * **client_id** (required)
 
-  name used to connect to mqtt broker. 
+  name used to connect to mqtt broker.
 
 * **refresh** (timespan, optional, default 5s)
 
@@ -182,7 +182,7 @@ The mqtt section contains broker definition and modbus register mappings. Mappin
 
   * **port** (optional, default 1883)
 
-    MQTT broker TCP port 
+    MQTT broker TCP port
 
   * **keepalive** (optional, default 60s)
 
@@ -198,11 +198,11 @@ The mqtt section contains broker definition and modbus register mappings. Mappin
 
 * **objects** (required)
 
-A list of topics where modbus values are published to MQTT broker and subscribed for writing data received from MQTT broker to modbus registers.  
+A list of topics where modbus values are published to MQTT broker and subscribed for writing data received from MQTT broker to modbus registers.
 
 * **topic** (required)
 
-  The base name for modbus register mapping. A mapping must contain at least one of following sections: 
+  The base name for modbus register mapping. A mapping must contain at least one of following sections:
 
     - *commands* - for writing to modbus registers
     - *state* - for reading modbus registers
@@ -260,7 +260,7 @@ A list of topics where modbus values are published to MQTT broker and subscribed
 
   Publishing value 100 to topic test_switch/set will write value 1 to register 2 on slave 1.
 
-  Unless you provide a custom converter M2MGateway expects register value as UTF-8 string value or json array with register values. You must provide exactly the same number of values as registers to write.
+  Unless you provide a custom converter MQMGateway expects register value as UTF-8 string value or json array with register values. You must provide exactly the same number of values as registers to write.
 
 ### The *state* section
 
@@ -278,7 +278,7 @@ A list of topics where modbus values are published to MQTT broker and subscribed
   Register list can be defined in two ways:
 
   1. As starting register and count:
-  
+
     state:
       name: mqtt_combined_val
       converter: std.int32
@@ -286,7 +286,7 @@ A list of topics where modbus values are published to MQTT broker and subscribed
       count: 2
 
   This declaration creates a poll group. Poll group is read from modbus slave using a single
-  modbus_read_registers(3) call. Overlapping poll groups are merged with each other and with 
+  modbus_read_registers(3) call. Overlapping poll groups are merged with each other and with
   poll groups defined in modbus section.
 
   2. as list of registers:
@@ -302,7 +302,7 @@ A list of topics where modbus values are published to MQTT broker and subscribed
         register_type: input
 
   This declaration do not create a poll group, but allows to construct MQTT topic data
-  from diffrent slaves, even on diffrent modbus networks. On exception is if there are poll groups defined in modbus section, that overlaps state register definitions. In this case 
+  from different slaves, even on different modbus networks. On exception is if there are poll groups defined in modbus section, that overlaps state register definitions. In this case
   data is polled using poll group.
 
   * **refresh**
@@ -319,7 +319,7 @@ A list of topics where modbus values are published to MQTT broker and subscribed
 
   When state is a single modbus register value:
 
-  * **name** 
+  * **name**
 
     The last part of topic name where value should be published. Full topic name is created as `topic_name/state_name`
 
@@ -344,7 +344,7 @@ A list of topics where modbus values are published to MQTT broker and subscribed
 
   The following examples show how to combine *name*, *register*, *register_type*, and *converter* to output different state values:
 
-  1. single value 
+  1. single value
 
     ```
     state:
@@ -389,19 +389,19 @@ A list of topics where modbus values are published to MQTT broker and subscribed
         register_type: input
     ```
 
-  In all of above examples *refresh*, *response_timeout* and *response_data_timeout* can be added at any level to set different values to 
+  In all of above examples *refresh*, *response_timeout* and *response_data_timeout* can be added at any level to set different values to
   whole list or a single register.
 
 ### The *availability* section
 
 For every *state* topic there is another *availability* topic defined by default. If all data from modbus registers needed for *state* is read without errors then by default value "1" is published. If there is any network or device error when polling register data value "0" is published. This is the default behavoiur if *availability* section is not defined.
 
-Availablity flag is always published before state value. 
+Availablity flag is always published before state value.
 
 *Availability* section extends this default behaviour by defining a single or list of modbus registers that should be readed to check if state data is valid. This could be i.e. some fault indicator or hardware switch state.
 
 Configuration values:
- 
+
   * **name** (required)
 
     The last part of topic name where availability flag should be published. Full topic name is created as `topic.name/availability.name`
@@ -422,7 +422,7 @@ Configuration values:
 
 ## Data conversion
 
-M2MGateway uses converstion plugins to convert state data readed from modbus registers to mqtt value and command mqtt payload to register value.
+MQMGateway uses conversion plugins to convert state data readed from modbus registers to mqtt value and command mqtt payload to register value.
 
 Data readed from modbus registers is by default converted to string and published to MQTT broker. To combine multiple modbus registers into single value, use mask to extract one bit, or perform some simple divide operations a converter can be used.
 
@@ -431,7 +431,7 @@ Converter can also be used to convert mqtt command payload to register value.
 ### Standard converters
 
 Converter functions are defined in libraries dynamically loaded at startup.
-M2MGateway contains *std* library with basic converters ready to use:
+MQMGateway contains *std* library with basic converters ready to use:
 
   * **divide**
 
@@ -454,10 +454,10 @@ M2MGateway contains *std* library with basic converters ready to use:
     Combines two modbus registers into one 32bit value or writes 23bit mqtt value to two modbus registers.
     Without arguments the first modbus register holds higher byte, the second holds lower byte.
     With 'low_first' argument the first modbus register holds lower byte, the second holds higher byte.
-    
+
 
   * **uint32**
-    
+
     Usage: state, command
 
     Arguments:
@@ -467,7 +467,7 @@ M2MGateway contains *std* library with basic converters ready to use:
 
 
   * **uint16**
-    
+
     Parses and writes modbus register data as unsinged int.
 
 
@@ -514,7 +514,7 @@ When mqtt command payload should be converted to register value:
 
 ### Exprtk converter.
 
-Exprtk converter allows to use exprtk expression language to convert register data to mqtt value. 
+Exprtk converter allows to use exprtk expression language to convert register data to mqtt value.
 Register values are defined as R0..Rn variables.
 
   * **evaluate**
@@ -590,7 +590,7 @@ class MyPlugin : ConverterPlugin {
         // name used in configuration as plugin prefix.
         virtual std::string getName() const { return "myplugin"; }
         virtual IStateConverter* getStateConverter(const std::string& name) {
-            if (name == "myconverter") 
+            if (name == "myconverter")
                 return new MyConverter();
             return nullptr;
         }

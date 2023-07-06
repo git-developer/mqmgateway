@@ -8,7 +8,7 @@ RUN git clone --single-branch -c advice.detachedHead=false \
       ${REPO_BRANCH:+--branch "${REPO_BRANCH}"} "${REPO_URL}" "/opt/mqmgateway/source"
 RUN sed -i 's/u_int16_t/uint16_t/g' /opt/mqmgateway/source/libmodmqttsrv/modbus_messages.hpp
 ARG EXPRTK_URL=https://github.com/ArashPartow/exprtk/raw/master/exprtk.hpp
-RUN mkdir -p /usr/local/include && wget -O /usr/local/include/exprtk.hpp "${EXPRTK_URL}"
+RUN mkdir -p /usr/local/include && wget -O /usr/local/include/exprtk.hpp "${EXPRTK_URL}" || true
 RUN cmake -DCMAKE_INSTALL_PREFIX:PATH=/opt/mqmgateway/install \
       -S /opt/mqmgateway/source \
       -B /opt/mqmgateway/build && \
@@ -23,6 +23,9 @@ FROM alpine AS runtime
 COPY --from=builder /opt/mqmgateway/install/ /usr/
 COPY --from=builder /opt/mqmgateway/source/modmqttd/config.template.yaml /etc/modmqttd/config.yaml
 COPY --from=builder /opt/mqmgateway/metadata/ /opt/metadata/
-RUN apk add --no-cache boost1.78-log boost1.78-program_options libmodbus mosquitto yaml-cpp
+RUN apk add --no-cache \
+  $(apk search -e boost*-log | grep -o '^boost.*-log') \
+  $(apk search -e boost*-program_options | grep -o '^boost.*-program_options') \
+  libmodbus mosquitto yaml-cpp
 ENTRYPOINT [ "/usr/bin/modmqttd" ]
 CMD [ "--config", "/etc/modmqttd/config.yaml" ]

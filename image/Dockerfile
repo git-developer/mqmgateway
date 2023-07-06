@@ -28,6 +28,7 @@ COPY --from=builder /opt/mqmgateway/metadata/ /opt/metadata/
 RUN apk update && apk add --no-cache \
   $(apk search -e boost*-log | grep -o '^boost.*-log') \
   $(apk search -e boost*-program_options | grep -o '^boost.*-program_options') \
-  libmodbus mosquitto yaml-cpp
+  libmodbus mosquitto yaml-cpp && \
+  apk cache purge
 ENTRYPOINT [ "/usr/bin/modmqttd" ]
 CMD [ "--config", "/etc/modmqttd/config.yaml" ]

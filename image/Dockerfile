@@ -13,7 +13,7 @@ RUN cmake -DCMAKE_INSTALL_PREFIX:PATH=/opt/mqmgateway/install \
       -S /opt/mqmgateway/source \
       -B /opt/mqmgateway/build && \
     cd /opt/mqmgateway/build && make -j$(($(nproc)-1)) && make install
-RUN mkdir -p /opt/metadata && \
+RUN mkdir -p /opt/mqmgateway/metadata && \
     echo >/opt/mqmgateway/metadata/commit_sha $(git rev-parse HEAD) && \
     echo >/opt/mqmgateway/metadata/commit_short_sha $(git rev-parse --short HEAD) && \
     echo >/opt/mqmgateway/metadata/commit_ref_name $(git rev-parse --abbrev-ref HEAD) && \

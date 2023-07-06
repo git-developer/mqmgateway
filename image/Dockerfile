@@ -1,4 +1,5 @@
-FROM alpine AS builder
+ARG ALPINE_VERSION=latest
+FROM alpine:${ALPINE_VERSION} AS builder
 RUN apk update && apk add --no-cache \
       git build-base cmake pkgconf \
       boost-dev libmodbus-dev mosquitto-dev yaml-cpp-dev rapidjson-dev catch2
@@ -20,7 +21,7 @@ RUN mkdir -p /opt/mqmgateway/metadata && \
     echo >/opt/mqmgateway/metadata/commit_ref_name $(git rev-parse --abbrev-ref HEAD) && \
     echo >/opt/mqmgateway/metadata/commit_date $(git show -s --format=%ci HEAD)
 
-FROM alpine AS runtime
+FROM alpine:${ALPINE_VERSION} AS runtime
 COPY --from=builder /opt/mqmgateway/install/ /usr/
 COPY --from=builder /opt/mqmgateway/source/modmqttd/config.template.yaml /etc/modmqttd/config.yaml
 COPY --from=builder /opt/mqmgateway/metadata/ /opt/metadata/

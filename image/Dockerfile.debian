@@ -1,4 +1,5 @@
-FROM debian:stable-slim AS builder
+ARG DEBIAN_VERSION=stable-slim
+FROM debian:${DEBIAN_VERSION} AS builder
 RUN apt-get update && apt-get install -y \
       --no-install-recommends ca-certificates \
       git build-essential cmake pkgconf \
@@ -13,7 +14,7 @@ RUN cmake -DCMAKE_INSTALL_PREFIX:PATH=/opt/mqmgateway/install ${SKIP_TESTS:+-DWI
       -B /opt/mqmgateway/build && \
     cd /opt/mqmgateway/build && make -j$(nproc) && make install
 
-FROM debian:stable-slim AS runtime
+FROM debian:${DEBIAN_VERSION} AS runtime
 COPY --from=builder /opt/mqmgateway/install/ /usr/
 COPY --from=builder /opt/mqmgateway/source/modmqttd/config.template.yaml /etc/modmqttd/config.yaml
 RUN apt-get update && apt-get install -y  --no-install-recommends \

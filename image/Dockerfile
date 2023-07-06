@@ -1,5 +1,5 @@
 FROM alpine AS builder
-RUN apk add --no-cache \
+RUN apk update && apk add --no-cache \
       git build-base cmake pkgconf \
       boost-dev libmodbus-dev mosquitto-dev yaml-cpp-dev rapidjson-dev catch2
 ARG REPO_URL=https://github.com/BlackZork/mqmgateway.git
@@ -23,7 +23,7 @@ FROM alpine AS runtime
 COPY --from=builder /opt/mqmgateway/install/ /usr/
 COPY --from=builder /opt/mqmgateway/source/modmqttd/config.template.yaml /etc/modmqttd/config.yaml
 COPY --from=builder /opt/mqmgateway/metadata/ /opt/metadata/
-RUN apk add --no-cache \
+RUN apk update && apk add --no-cache \
   $(apk search -e boost*-log | grep -o '^boost.*-log') \
   $(apk search -e boost*-program_options | grep -o '^boost.*-program_options') \
   libmodbus mosquitto yaml-cpp

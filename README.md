@@ -246,7 +246,7 @@ A list of topics where modbus values are published to MQTT broker and subscribed
 
   * **converter** (optional)
 
-    The name of function that should be called to convert mqtt value to u_int16 value. Format of function name is `plugin name.function name`. See converters for details. 
+    The name of function that should be called to convert mqtt value to uint16 value. Format of function name is `plugin name.function name`. See converters for details.
 
   Example of MQTT command topic declaration:
 
@@ -269,9 +269,9 @@ A list of topics where modbus values are published to MQTT broker and subscribed
 
   | Value type | Default output |
   | --- | --- |
-  | single register | u_int16 register data as string |
-  | unnamed list | JSON array with u_int16 register data as string |
-  | named list | JSON map with values as u_int16 register data as string |
+  | single register | uint16 register data as string |
+  | unnamed list | JSON array with uint16 register data as string |
+  | named list | JSON map with values as uint16 register data as string |
 
   It is also possible to combine and output an unnamed list of registers as a single value using converter. See converters section for details.
 
@@ -340,7 +340,7 @@ A list of topics where modbus values are published to MQTT broker and subscribed
 
   * **converter** (optional)
 
-    The name of function that should be called to convert register u_int16 value to MQTT UTF-8 value. Format of function name is `plugin_name.function_name`. See converters for details. 
+    The name of function that should be called to convert register uint16 value to MQTT UTF-8 value. Format of function name is `plugin_name.function_name`. See converters for details.
 
   The following examples show how to combine *name*, *register*, *register_type*, and *converter* to output different state values:
 

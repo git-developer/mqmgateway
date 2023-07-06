@@ -1,0 +1,23 @@
+FROM debian:stable-slim AS builder
+RUN apt-get update && apt-get install -y \
+      --no-install-recommends ca-certificates \
+      git build-essential cmake pkgconf \
+      libboost-dev libboost-log-dev libboost-program-options-dev libmodbus-dev libmosquittopp-dev libyaml-cpp-dev rapidjson-dev catch2
+ARG REPO_URL=https://github.com/BlackZork/mqmgateway.git
+ARG REPO_BRANCH
+RUN git clone --single-branch -c advice.detachedHead=false \
+      ${REPO_BRANCH:+--branch "${REPO_BRANCH}"} "${REPO_URL}" "/opt/mqmgateway/source"
+RUN cmake -DCMAKE_INSTALL_PREFIX:PATH=/opt/mqmgateway/install \
+      -S /opt/mqmgateway/source \
+      -B /opt/mqmgateway/build && \
+    cd /opt/mqmgateway/build && make -j$(($(nproc)-1)) && make install
+
+FROM debian:stable-slim AS runtime
+COPY --from=builder /opt/mqmgateway/install/ /usr/
+COPY --from=builder /opt/mqmgateway/source/modmqttd/config.template.yaml /etc/modmqttd/config.yaml
+RUN apt-get update && apt-get install -y  --no-install-recommends \
+      libmodbus[^-]*$ libmosquittopps[^-]*$ libyaml-cpps[^-]*$ \
+      $(for p in log program-options; do apt-cache search "libboost-${p}[^-]*$" | sort | cut -f 1 -d ' ' | tail -n 1; done) && \
+    apt-get clean
+ENTRYPOINT [ "/usr/bin/modmqttd" ]
+CMD [ "--config", "/etc/modmqttd/config.yaml" ]

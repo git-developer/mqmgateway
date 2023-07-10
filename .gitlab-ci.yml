@@ -3,9 +3,8 @@ include:
 
 variables:
   IMAGE_PLATFORMS: 'linux/amd64,linux/i386,linux/arm64,linux/arm/v7,linux/arm/v6'
-  UPDATE_CHECK_URLS: 'https://github.com/git-developer/mqmgateway.git'
-  UPDATE_CHECK_REF: 'feature/stdconv'
-  BUILD_ARGS: 'REPO_URL=https://github.com/git-developer/mqmgateway REPO_BRANCH=feature/stdconv SKIP_TESTS=1'
+  UPDATE_CHECK_URLS: 'https://github.com/BlackZork/mqmgateway.git'
+  BUILD_ARGS: 'SKIP_TESTS=1'
 
 read_application_tags:
   extends: .docker_support:.with_bare_image

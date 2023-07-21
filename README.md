@@ -222,6 +222,14 @@ A list of topics where modbus values are published to MQTT broker and subscribed
 
     Overrides mqtt.refresh for all state and availability sections in this topic
 
+  * **network**
+
+    Sets default network name for all state, commands and availability sections in this topic
+
+  * **slave**
+
+    Sets default modbus slave address for all state, commands and availability sections in this topic
+
 ### A *commands* section.
 
   A single command is defined using following settings.
@@ -235,6 +243,8 @@ A list of topics where modbus values are published to MQTT broker and subscribed
     Modbus register address in the form of `<network_name>.<slave_id>.<register_number>`
     If `register_number` is a decimal, then first register address is 1.
     If `register_number` is a hexadecimal, then first register address is 0.
+
+    `network_name` and `slave_id` are optional if default values are set for a topic
 
   *  **register_type** (required)
 
@@ -329,6 +339,8 @@ A list of topics where modbus values are published to MQTT broker and subscribed
     If `register_number` is a decimal, then first register address is 1.
     If `register_number` is a hexadecimal, then first register address is 0.
 
+    `network_name` and `slave_id` are optional if default values are set for a topic
+
   * **register_type** (required)
 
     Modbus register type: coil, bit, input, holding
@@ -408,7 +420,11 @@ Configuration values:
 
   * **register** (required)
 
-    Modbus register address in the form of <network_name>.<slave_id>.<address>
+    Modbus register address in the form of <network_name>.<slave_id>.<register_number>
+    If `register_number` is a decimal, then first register address is 1.
+    If `register_number` is a hexadecimal, then first register address is 0.
+
+    `network_name` and `slave_id` are optional if default values are set for a topic
 
   * **register_type** (required)
 
@@ -440,9 +456,13 @@ MQMGateway contains *std* library with basic converters ready to use:
     Arguments:
       - divider (required)
       - precision (optional)
+      - low_first (optional)
 
 
     Divides modbus value by divder and rounds to (precision) digits after the decimal.
+    Supports int16 in single register and int32 value in two registers.
+    For int32 mode the first modbus register holds higher byte, the second holds lower byte if 'low first' is not passed.
+    With 'low_first' argument the first modbus register holds lower byte, the second holds higher byte.
 
   * **int32**
 
@@ -524,8 +544,30 @@ Register values are defined as R0..Rn variables.
     Arguments:
       - [exprtk expression](http://www.partow.net/programming/exprtk/) with Rx as register variables (required)
       - precision (optional)
+    
+    &nbsp;
 
-Here is an example dividing two registers with precision=3
+    The following custom functions for 32-bit numbers are supported in the expression.
+    _ABCD_ means a number composed of the byte array `[A, B, C, D]`,
+    where _A_ is the most significant byte (MSB) and _D_ is the least-significant byte (LSB).
+      - `int32(R0, R1)`:   Cast to signed integer _ABCD_ from `R0` == _AB_ and `R1` == _CD_.
+      - `int32(R1, R0)`:   Cast to signed integer _ABCD_ from `R0` == _CD_ and `R1` == _AB_.
+      - `uint32(R0, R1)`:  Cast to unsigned integer _ABCD_ from `R0` == _AB_ and `R1` == _CD_.
+      - `uint32(R1, R0)`:  Cast to unsigned integer _ABCD_ from `R0` == _CD_ and `R1` == _AB_.
+      - `flt32(R0, R1)`:   Cast to float _ABCD_ from `R0` == _AB_ and `R1` == _CD_.
+      - `flt32(R1, R0)`:   Cast to float _ABCD_ from `R0` == _CD_ and `R1` == _AB_.
+      - `flt32be(R0, R1)`: Cast to float _ABCD_ from `R0` == _BA_ and `R1` == _DC_.
+      - `flt32be(R1, R0)`: Cast to float _ABCD_ from `R0` == _DC_ and `R1` == _BA_.
+
+    &nbsp;
+
+
+    If modbus register contains signed integer data, you can use this cast in the expression:
+
+      - `int16(R0)`: Cast uint16 value from `R0' to int16
+
+#### Examples
+Division of two registers with precision 3:
 
 ```
   objects:
@@ -538,6 +580,20 @@ Here is an example dividing two registers with precision=3
           - register: tcptest.1.3
             register_type: input
 ```
+
+Reading the state of a 32-bit float value (byte order `ABCD`) spanning two registers (R0 = `BA`, R1 = `DC`) with precision 3:
+```
+  objects:
+    - topic: test_state
+      state:
+        converter: expr.evaluate("flt32be(R0, R1)", 3)
+        registers:
+          - register: tcptest.1.2
+            register_type: input
+          - register: tcptest.1.3
+            register_type: input
+```
+
 
 
 ### Adding custom converters

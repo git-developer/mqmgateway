@@ -459,7 +459,7 @@ MQMGateway contains *std* library with basic converters ready to use:
       - low_first (optional)
 
 
-    Divides modbus value by divder and rounds to (precision) digits after the decimal.
+    Divides modbus value by divider and rounds to (precision) digits after the decimal.
     Supports int16 in single register and int32 value in two registers.
     For int32 mode the first modbus register holds higher byte, the second holds lower byte if 'low first' is not passed.
     With 'low_first' argument the first modbus register holds lower byte, the second holds higher byte.
@@ -471,7 +471,7 @@ MQMGateway contains *std* library with basic converters ready to use:
     Arguments:
       - low_first (optional)
 
-    Combines two modbus registers into one 32bit value or writes 23bit mqtt value to two modbus registers.
+    Combines two modbus registers into one 32bit value or writes 32bit mqtt value to two modbus registers.
     Without arguments the first modbus register holds higher byte, the second holds lower byte.
     With 'low_first' argument the first modbus register holds lower byte, the second holds higher byte.
 
@@ -488,7 +488,7 @@ MQMGateway contains *std* library with basic converters ready to use:
 
   * **uint16**
 
-    Parses and writes modbus register data as unsinged int.
+    Parses and writes modbus register data as unsigned int.
 
 
   * **bitmask**

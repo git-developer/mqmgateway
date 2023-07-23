@@ -11,10 +11,14 @@ RUN git clone --single-branch -c advice.detachedHead=false \
 RUN sed -i 's/u_int16_t/uint16_t/g' /opt/mqmgateway/source/libmodmqttsrv/modbus_messages.hpp
 ARG EXPRTK_URL=https://github.com/ArashPartow/exprtk/raw/master/exprtk.hpp
 RUN if [ "${EXPRTK_URL-}" ]; then mkdir -p /usr/local/include && wget -O /usr/local/include/exprtk.hpp "${EXPRTK_URL}" || true; fi
-RUN cmake -DCMAKE_INSTALL_PREFIX:PATH=/opt/mqmgateway/install ${SKIP_TESTS:+-DWITHOUT_TESTS=1} \
+RUN cmake \
+      -DCMAKE_INSTALL_PREFIX:PATH=/opt/mqmgateway/install \
+      ${SKIP_TESTS:+-DWITHOUT_TESTS=1} \
       -S /opt/mqmgateway/source \
       -B /opt/mqmgateway/build && \
-    cd /opt/mqmgateway/build && make -j$(nproc) && make install
+    cd /opt/mqmgateway/build && make -j$(nproc) && \
+    if [ -z "${SKIP_TESTS}" ]; then cd unittests && ./tests && cd ..; fi && \
+    make install
 RUN cd /opt/mqmgateway/source && \
     mkdir -p /opt/mqmgateway/metadata && \
     echo >/opt/mqmgateway/metadata/commit_sha $(git rev-parse HEAD) && \

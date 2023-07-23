@@ -3,7 +3,7 @@ A multithreaded C++ service that exposes data from multiple [Modbus](http://www.
 
 Main features:
 * Connects to multiple TCP and RTU modbus networks
-* Handles state and availablity for each configured MQTT object
+* Handles state and availability for each configured MQTT object
 * Allows to read and write to MODBUS registers from MQTT side with custom data conversion
 * Flexible MQTT state topic configuration:
   * single modbus register published as string value
@@ -410,7 +410,7 @@ For every *state* topic there is another *availability* topic defined by default
 
 Availablity flag is always published before state value.
 
-*Availability* section extends this default behaviour by defining a single or list of modbus registers that should be readed to check if state data is valid. This could be i.e. some fault indicator or hardware switch state.
+*Availability* section extends this default behaviour by defining a single or list of modbus registers that should be read to check if state data is valid. This could be i.e. some fault indicator or hardware switch state.
 
 Configuration values:
 
@@ -432,15 +432,15 @@ Configuration values:
 
   * **available_value** (optional, default 1)
 
-    Expected uint16 value readed from availablity register when availablity flag should be set to "1". If other value is readed then availability flag is set to "0".
+    Expected uint16 value read from availability register when availability flag should be set to "1". If other value is read then availability flag is set to "0".
 
-*register*, *register_type* and *available_value* can form a list when multiple registers should be readed.
+*register*, *register_type* and *available_value* can form a list when multiple registers should be read.
 
 ## Data conversion
 
-MQMGateway uses conversion plugins to convert state data readed from modbus registers to mqtt value and command mqtt payload to register value.
+MQMGateway uses conversion plugins to convert state data read from modbus registers to mqtt value and command mqtt payload to register value.
 
-Data readed from modbus registers is by default converted to string and published to MQTT broker. To combine multiple modbus registers into single value, use mask to extract one bit, or perform some simple divide operations a converter can be used.
+Data read from modbus registers is by default converted to string and published to MQTT broker. To combine multiple modbus registers into single value, use mask to extract one bit, or perform some simple divide operations a converter can be used.
 
 Converter can also be used to convert mqtt command payload to register value.
 
@@ -499,7 +499,7 @@ MQMGateway contains *std* library with basic converters ready to use:
       - bitmask in hex (default "0xffff")
 
 
-    Applies a mask to value readed from modbus register.
+    Applies a mask to value read from modbus register.
 
 Converter can be added to modbus register in state and command section.
 

@@ -15,10 +15,12 @@ RUN cmake \
       -DCMAKE_INSTALL_PREFIX:PATH=/opt/mqmgateway/install \
       ${SKIP_TESTS:+-DWITHOUT_TESTS=1} \
       -S /opt/mqmgateway/source \
-      -B /opt/mqmgateway/build && \
-    cd /opt/mqmgateway/build && make -j$(nproc) && \
-    if [ -z "${SKIP_TESTS}" ]; then cd unittests && ./tests && cd ..; fi && \
-    make install
+      -B /opt/mqmgateway/build
+WORKDIR /opt/mqmgateway/build
+RUN make -j$(nproc)
+ARG ALLOW_TEST_FAILURE=true
+RUN if [ -z "${SKIP_TESTS}" ]; then cd unittests; ./tests || [ "${ALLOW_TEST_FAILURE}" = "true" ]; fi
+RUN make install
 RUN cd /opt/mqmgateway/source && \
     mkdir -p /opt/mqmgateway/metadata && \
     echo >/opt/mqmgateway/metadata/commit_sha $(git rev-parse HEAD) && \

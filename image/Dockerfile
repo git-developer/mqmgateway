@@ -8,7 +8,6 @@ ARG REPO_BRANCH
 ARG SKIP_TESTS
 RUN git clone --single-branch -c advice.detachedHead=false \
       ${REPO_BRANCH:+--branch "${REPO_BRANCH}"} "${REPO_URL}" "/opt/mqmgateway/source"
-RUN sed -i 's/u_int16_t/uint16_t/g' /opt/mqmgateway/source/libmodmqttsrv/modbus_messages.hpp
 ARG EXPRTK_URL=https://github.com/ArashPartow/exprtk/raw/master/exprtk.hpp
 RUN if [ "${EXPRTK_URL-}" ]; then mkdir -p /usr/local/include && wget -O /usr/local/include/exprtk.hpp "${EXPRTK_URL}" || true; fi
 RUN cmake \

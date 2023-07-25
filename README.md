@@ -23,7 +23,7 @@ Main features:
   * support for conversion in both directions
 * Fast modbus frequency polling, configurable per newtork, per mqtt object and per register
 
-MQMGateway depends on [libmodbus](https://libmodbus.org/) and [Mosqutto](https://mosquitto.org/) MQTT library. See main [CMakeLists.txt](link) for full list of dependencies. It is developed under Linux, but it should be easy to port it to other platforms.
+MQMGateway depends on [libmodbus](https://libmodbus.org/) and [Mosquitto](https://mosquitto.org/) MQTT library. See main [CMakeLists.txt](CMakeLists.txt) for full list of dependencies. It is developed under Linux, but it should be easy to port it to other platforms.
 
 # License
 This software is dual-licensed:
@@ -341,7 +341,7 @@ A list of topics where modbus values are published to MQTT broker and subscribed
 
     `network_name` and `slave_id` are optional if default values are set for a topic
 
-  * **register_type** (required)
+  * **register_type** (optional, default: `holding`)
 
     Modbus register type: coil, bit, input, holding
 
@@ -438,9 +438,9 @@ Configuration values:
 
 ## Data conversion
 
-MQMGateway uses conversion plugins to convert state data read from modbus registers to mqtt value and command mqtt payload to register value.
+Data read from modbus registers is by default converted to string and published to MQTT broker.
 
-Data read from modbus registers is by default converted to string and published to MQTT broker. To combine multiple modbus registers into single value, use mask to extract one bit, or perform some simple divide operations a converter can be used.
+MQMGateway uses conversion plugins to convert state data read from modbus registers to mqtt value and command mqtt payload to register value, for example to combine multiple modbus registers into single value, use mask to extract one bit, or perform some simple divide operations.
 
 Converter can also be used to convert mqtt command payload to register value.
 
@@ -488,6 +488,8 @@ MQMGateway contains *std* library with basic converters ready to use:
 
   * **uint16**
 
+    Usage: state, command
+
     Parses and writes modbus register data as unsigned int.
 
 
@@ -500,6 +502,16 @@ MQMGateway contains *std* library with basic converters ready to use:
 
 
     Applies a mask to value read from modbus register.
+
+  * **string**
+
+    Usage: state, command
+
+    Parses and writes modbus register data as string.
+    Register data is expected as C-Style string in UTF-8 (or ASCII) encoding, e.g. `0x4142` for the string _AB_.
+    If there not Nul 0x0 byte at the end, then string size is determined by the number of registers, configured using the `count` setting.
+
+    When writing, converters puts all bytes from Mqtt payload into register bytes. If payload is shorter, then remaining bytes are zeroed.
 
 Converter can be added to modbus register in state and command section.
 
@@ -516,10 +528,10 @@ When state is combined from multiple modbus registers:
 
 ```
   state:
-    converter: std.int32()
     register: device1.slave2.12
     register_type: input
     count: 2
+    converter: std.int32()
 ```
 
 When mqtt command payload should be converted to register value:
@@ -544,7 +556,7 @@ Register values are defined as R0..Rn variables.
     Arguments:
       - [exprtk expression](http://www.partow.net/programming/exprtk/) with Rx as register variables (required)
       - precision (optional)
-    
+
     &nbsp;
 
     The following custom functions for 32-bit numbers are supported in the expression.

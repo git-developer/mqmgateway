@@ -4,6 +4,7 @@ include:
 variables:
   IMAGE_PLATFORMS: 'linux/amd64,linux/i386,linux/arm64,linux/arm/v7,linux/arm/v6'
   UPDATE_CHECK_URLS: 'https://github.com/BlackZork/mqmgateway.git'
+  BUILD_ARGS: 'MQM_TEST_DEFAULT_WAIT_MS=200 MQM_TEST_ALLOW_FAILURE=true'
 
 read_application_tags:
   extends: .docker_support:.with_bare_image

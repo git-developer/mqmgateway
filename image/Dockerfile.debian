@@ -23,10 +23,17 @@ ARG MQM_TEST_DEFAULT_WAIT_MS
 ARG MQM_TEST_LOGLEVEL
 RUN if [ -z "${MQM_TEST_SKIP}" ]; then cd unittests; ./tests || [ "${MQM_TEST_ALLOW_FAILURE}" = "true" ]; fi
 RUN make install
+RUN cd /opt/mqmgateway/source && \
+    mkdir -p /opt/mqmgateway/metadata && \
+    echo >/opt/mqmgateway/metadata/commit_sha $(git rev-parse HEAD) && \
+    echo >/opt/mqmgateway/metadata/commit_short_sha $(git rev-parse --short HEAD) && \
+    echo >/opt/mqmgateway/metadata/commit_ref_name $(git rev-parse --abbrev-ref HEAD) && \
+    echo >/opt/mqmgateway/metadata/commit_date $(git show -s --format=%ci HEAD)
 
 FROM debian:${DEBIAN_VERSION} AS runtime
 COPY --from=builder /opt/mqmgateway/install/ /usr/
 COPY --from=builder /opt/mqmgateway/source/modmqttd/config.template.yaml /etc/modmqttd/config.yaml
+COPY --from=builder /opt/mqmgateway/metadata/ /opt/metadata/
 RUN apt-get update && apt-get install -y  --no-install-recommends \
       libmodbus[^-]*$ libmosquittopp[^-]*$ libyaml-cpp[^-]*$ \
       $(for p in log program-options; do apt-cache search "libboost-${p}[^-]*$" | sort | cut -f 1 -d ' ' | tail -n 1; done) && \

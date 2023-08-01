@@ -4,13 +4,23 @@ RUN apt-get update && apt-get install -y \
       --no-install-recommends ca-certificates \
       git build-essential cmake pkgconf \
       libboost-dev libboost-log-dev libboost-program-options-dev libmodbus-dev libmosquittopp-dev libyaml-cpp-dev rapidjson-dev catch2
+
 ARG REPO_URL=https://github.com/BlackZork/mqmgateway.git
 ARG REPO_BRANCH
-ARG MQM_TEST_SKIP
-RUN git clone --single-branch -c advice.detachedHead=false \
-      ${REPO_BRANCH:+--branch "${REPO_BRANCH}"} "${REPO_URL}" "/opt/mqmgateway/source"
+COPY . /opt/mqmgateway/source
+RUN if [ "${REPO_URL-}" ]; then \
+      rm -r /opt/mqmgateway/source && \
+      git clone --single-branch -c advice.detachedHead=false \
+        ${REPO_BRANCH:+--branch "${REPO_BRANCH}"} "${REPO_URL}" "/opt/mqmgateway/source"; \
+    fi
+
 ARG EXPRTK_URL=https://github.com/ArashPartow/exprtk/raw/master/exprtk.hpp
-RUN if [ "${EXPRTK_URL-}" ]; then mkdir -p /usr/local/include && wget -O /usr/local/include/exprtk.hpp "${EXPRTK_URL}" || true; fi
+RUN if [ "${EXPRTK_URL-}" ]; then \
+      mkdir -p /usr/local/include && \
+      wget -O /usr/local/include/exprtk.hpp "${EXPRTK_URL}" || true; \
+    fi
+
+ARG MQM_TEST_SKIP
 RUN cmake \
       -DCMAKE_INSTALL_PREFIX:PATH=/opt/mqmgateway/install \
       ${MQM_TEST_SKIP:+-DWITHOUT_TESTS=1} \

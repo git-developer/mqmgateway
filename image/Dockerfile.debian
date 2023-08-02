@@ -1,7 +1,7 @@
 ARG DEBIAN_VERSION=stable-slim
 FROM debian:${DEBIAN_VERSION} AS builder
 RUN apt-get update && apt-get install -y \
-      --no-install-recommends ca-certificates \
+      --no-install-recommends ca-certificates wget \
       git build-essential cmake pkgconf \
       libboost-dev libboost-log-dev libboost-program-options-dev libmodbus-dev libmosquittopp-dev libyaml-cpp-dev rapidjson-dev catch2
 

@@ -5,7 +5,7 @@ variables:
   BUILD_CONTEXT: .
   IMAGE_PLATFORMS: 'linux/amd64,linux/i386,linux/arm64,linux/arm/v7,linux/arm/v6'
   UPDATE_CHECK_URLS: 'https://github.com/BlackZork/mqmgateway.git'
-  BUILD_ARGS: 'MQM_REPO_URL=https://github.com/BlackZork/mqmgateway.git MQM_TEST_ALLOW_FAILURE=true MQM_TEST_DEFAULT_WAIT_MS=500 MQM_TEST_LOGLEVEL=4'
+  BUILD_ARGS: 'MQM_REPO_URL=https://github.com/git-developer/mqmgateway.git MQM_REPO_BRANCH=fix/i386 MQM_TEST_ALLOW_FAILURE=true MQM_TEST_DEFAULT_WAIT_MS=400 MQM_TEST_LOGLEVEL=3'
 
 read_application_tags:
   extends: .docker_support:.with_bare_image

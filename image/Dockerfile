@@ -3,14 +3,10 @@ FROM alpine:${ALPINE_VERSION} AS builder
 RUN apk update && apk add --no-cache \
       git build-base cmake pkgconf boost-dev libmodbus-dev mosquitto-dev yaml-cpp-dev rapidjson-dev catch2
 
-ARG MQM_REPO_URL
+ARG MQM_REPO_URL=https://github.com/BlackZork/mqmgateway.git
 ARG MQM_REPO_BRANCH
-COPY . /opt/mqmgateway/source
-RUN if [ "${MQM_REPO_URL-}" ]; then \
-      rm -r /opt/mqmgateway/source && \
-      git clone --single-branch -c advice.detachedHead=false \
-        ${MQM_REPO_BRANCH:+--branch "${MQM_REPO_BRANCH}"} "${MQM_REPO_URL}" "/opt/mqmgateway/source"; \
-    fi
+RUN git clone --single-branch -c advice.detachedHead=false \
+      ${MQM_REPO_BRANCH:+--branch "${MQM_REPO_BRANCH}"} "${MQM_REPO_URL}" "/opt/mqmgateway/source"
 
 ARG EXPRTK_URL=https://github.com/ArashPartow/exprtk/raw/master/exprtk.hpp
 RUN if [ "${EXPRTK_URL-}" ]; then \

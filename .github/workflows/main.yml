@@ -61,7 +61,7 @@ jobs:
           build-args: |
             MQM_REPO_URL=https://github.com/git-developer/mqmgateway.git
             MQM_REPO_BRANCH=fix/i386
-            MQM_TEST_DEFAULT_WAIT_MS=100
+            MQM_TEST_DEFAULT_WAIT_MS=300
       -
         name: Export digest
         run: |

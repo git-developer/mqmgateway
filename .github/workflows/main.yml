@@ -13,7 +13,7 @@ env:
 
 # permissions are needed if pushing to ghcr.io
 permissions:
-  packages: write
+  packages: admin
 
 jobs:
   build:

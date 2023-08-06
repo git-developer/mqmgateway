@@ -30,8 +30,8 @@ jobs:
   build-and-publish-default:
     if: inputs.registry != 'ghcr.io'
     uses: ./.github/workflows/build-and-publish.yml
-    with:
-      registry:       ${{ inputs.registry }}
+#    with:
+#      registry:       ${{ inputs.registry }}
 #      platforms:      ${{ inputs.platforms }}
 #      build-args:     ${{ inputs.build-args }}
 #    secrets: inherit

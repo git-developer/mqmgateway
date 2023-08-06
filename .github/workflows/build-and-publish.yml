@@ -4,11 +4,8 @@ on:
   workflow_call:
     inputs:
       registry:
-        type: choice
+        type: string
         default: ghcr.io
-        options:
-          - ghcr.io
-          - docker.io
       platforms:
         default: '[ "linux/amd64", "linux/arm/v7" ]'
       build-args:

@@ -2,6 +2,7 @@ name: build-and-publish
 
 on:
   workflow_dispatch:
+    secrets: inherit
     inputs:
       registry-provider:
         type: choice

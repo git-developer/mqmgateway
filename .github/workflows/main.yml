@@ -1,4 +1,4 @@
-name: build-and-publish
+name: trigger-build-and-publish
 
 on:
   workflow_dispatch:
@@ -16,28 +16,10 @@ on:
           MQM_TEST_DEFAULT_WAIT_MS=400
 
 jobs:
-  build-multiarch-ghcr:
-    if: contains(fromJSON('["ghcr.io", "", null]'), inputs.registry)
-    permissions:
-      packages: write
-    uses: ./.github/workflows/build-multiarch.yml
+  build-and-publish:
+    uses: ./.github/workflows/build-and-publish.yml
     with:
-      registry:       ghcr.io
-      username:       ${{ github.actor }}
-      registry-image: ghcr.io/${{ github.repository }}
+      registry:       ${{ inputs.registry }}
       platforms:      ${{ inputs.platforms }}
       build-args:     ${{ inputs.build-args }}
-    secrets:
-      password:       ${{ secrets.GITHUB_TOKEN }}
-
-  build-multiarch-dockerhub:
-    if: inputs.registry == 'docker.io'
-    uses: ./.github/workflows/build-multiarch.yml
-    with:
-      registry:       docker.io
-      username:       ${{ vars.DOCKERHUB_USERNAME }}
-      registry-image: ${{ vars.DOCKERHUB_USERNAME }}/${{ github.event.repository.name }}
-      platforms:      ${{ inputs.platforms }}
-      build-args:     ${{ inputs.build-args }}
-    secrets:
-      password:       ${{ secrets.DOCKERHUB_TOKEN }}
+    secrets: inherit

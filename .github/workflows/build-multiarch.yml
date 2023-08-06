@@ -5,7 +5,7 @@ on:
     inputs:
       registry:
         type: string
-        default: docker.io
+        required: true
       username:
         type: string
         required: true
@@ -14,9 +14,12 @@ on:
         required: true
       platforms:
         type: string
-        default: '[ "linux/amd64", "linux/arm/v7" ]'
+        required: true
       build-args:
         type: string
+      fail-fast:
+        type: boolean
+        default: true
     secrets:
       password:
 
@@ -24,7 +27,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     strategy:
-      fail-fast: true
+      fail-fast: ${{ inputs.fail-fast }}
       matrix:
         platform: ${{ fromJSON(inputs.platforms) }}
     steps:

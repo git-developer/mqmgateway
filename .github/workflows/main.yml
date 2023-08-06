@@ -1,6 +1,5 @@
 name: build-and-publish
 
-
 on:
   workflow_dispatch:
     inputs:
@@ -10,11 +9,11 @@ on:
         options:
           - ghcr.io
           - docker.io
-
-env:
-  PLATFORMS: '[ "linux/amd64", "linux/arm/v6", "linux/arm/v7", "linux/arm64", "linux/i386" ]'
-  BUILD_ARGS: |
-    MQM_TEST_DEFAULT_WAIT_MS=400
+      platforms:
+        default: '[ "linux/amd64", "linux/arm/v6", "linux/arm/v7", "linux/arm64", "linux/i386" ]'
+      build-args:
+        default: |
+          MQM_TEST_DEFAULT_WAIT_MS=400
 
 jobs:
   build-multiarch-ghcr:
@@ -23,8 +22,8 @@ jobs:
       packages: write
     uses: ./.github/workflows/build-multiarch.yml
     with:
-      platforms: ${{ env.PLATFORMS }}
-      build-args: ${{ env.BUILD_ARGS }}
+      platforms: ${{ inputs.platforms }}
+      build-args: ${{ inputs.build-args }}
 
   build-multiarch-dockerhub:
     if: inputs.registry-provider == 'docker.io'
@@ -33,7 +32,7 @@ jobs:
       registry: docker.io
       username: ${{ secrets.DOCKERHUB_USERNAME }}
       registry-image: ${{ secrets.DOCKERHUB_USERNAME }}/${{ github.event.repository.name }}
-      platforms: ${{ env.PLATFORMS }}
-      build-args: ${{ env.BUILD_ARGS }}
+      platforms: ${{ inputs.platforms }}
+      build-args: ${{ inputs.build-args }}
     secrets:
       password: ${{ secrets.DOCKERHUB_TOKEN }}

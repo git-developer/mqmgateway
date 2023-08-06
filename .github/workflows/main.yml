@@ -24,4 +24,3 @@ jobs:
       registry:       ${{ inputs.registry }}
       platforms:      ${{ inputs.platforms }}
       build-args:     ${{ inputs.build-args }}
-#    secrets: inherit

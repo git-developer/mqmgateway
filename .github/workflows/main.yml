@@ -27,7 +27,7 @@ jobs:
 
   build-multiarch-dockerhub:
     if: inputs.registry-provider == 'docker.io'
-    uses: ./.github/workflows/build-multiarch
+    uses: ./.github/workflows/build-multiarch.yml
     with:
       registry: docker.io
       username: ${{ secrets.DOCKERHUB_USERNAME }}

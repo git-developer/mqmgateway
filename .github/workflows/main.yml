@@ -17,7 +17,7 @@ on:
 
 jobs:
   build-and-publish-ghcr:
-    if: inputs.registry == "ghcr.io"
+    if: inputs.registry == 'ghcr.io'
     permissions:
       packages: write
     uses: ./.github/workflows/build-and-publish.yml
@@ -28,7 +28,7 @@ jobs:
 #    secrets: inherit
 
   build-and-publish-default:
-    if: inputs.registry != "ghcr.io"
+    if: inputs.registry != 'ghcr.io'
     uses: ./.github/workflows/build-and-publish.yml
 #    with:
 #      registry:       ${{ inputs.registry }}

@@ -14,6 +14,7 @@ on:
       build-args:
         default: |
           MQM_TEST_DEFAULT_WAIT_MS=400
+    secrets: inherit
 
 jobs:
   build-multiarch-ghcr:

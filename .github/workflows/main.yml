@@ -31,9 +31,9 @@ jobs:
     uses: ./.github/workflows/build-multiarch.yml
     with:
       registry: docker.io
-      registry-image: ${{ secrets.DOCKERHUB_USERNAME }}/${{ github.event.repository.name }}
+      username: ${{ vars.DOCKERHUB_USERNAME }}
+      registry-image: ${{ vars.DOCKERHUB_USERNAME }}/${{ github.event.repository.name }}
       platforms: ${{ inputs.platforms }}
       build-args: ${{ inputs.build-args }}
     secrets:
-      username: ${{ secrets.DOCKERHUB_USERNAME }}
       password: ${{ secrets.DOCKERHUB_TOKEN }}

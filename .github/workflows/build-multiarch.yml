@@ -5,14 +5,14 @@ on:
     inputs:
       registry:
         default: ghcr.io
+      username:
+        default: ${{ github.actor }}
       registry-image:
         default: ghcr.io/${{ github.repository }}
       platforms:
         default: '[ "linux/amd64", "linux/arm/v7" ]'
       build-args:
     secrets:
-      username:
-        default: ${{ github.actor }}
       password:
         default: ${{ secrets.GITHUB_TOKEN }}
 

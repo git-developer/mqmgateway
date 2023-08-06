@@ -20,7 +20,7 @@ jobs:
     if: contains(fromJSON('["ghcr.io", "", null]'), inputs.registry-provider)
     permissions:
       packages: write
-    uses: ./.github/workflows/build-multiarch
+    uses: ./.github/workflows/build-multiarch.yml
     with:
       platforms: ${{ env.PLATFORMS }}
       build-args: ${{ env.BUILD_ARGS }}

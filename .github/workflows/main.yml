@@ -2,7 +2,7 @@ name: build-and-publish
 
 on:
   workflow_dispatch:
-    secrets: inherit
+#    secrets: inherit
     inputs:
       registry-provider:
         type: choice
@@ -25,6 +25,8 @@ jobs:
     with:
       platforms: ${{ inputs.platforms }}
       build-args: ${{ inputs.build-args }}
+    secrets:
+      password: ${{ secrets.GITHUB_TOKEN }}
 
   build-multiarch-dockerhub:
     if: inputs.registry-provider == 'docker.io'

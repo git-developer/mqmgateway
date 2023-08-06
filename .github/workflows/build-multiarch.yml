@@ -19,10 +19,9 @@ on:
         type: string
     secrets:
       password:
-        default: ${{ secrets.GITHUB_TOKEN }}
 
 permissions:
-  packages: ${{ inputs.registry == 'ghcr.io' && 'write' || null }}
+  packages: write
 
 jobs:
   build:

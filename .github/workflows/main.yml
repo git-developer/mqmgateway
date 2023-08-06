@@ -16,12 +16,22 @@ on:
           MQM_TEST_DEFAULT_WAIT_MS=400
 
 jobs:
-  build-and-publish:
-    uses: ./.github/workflows/build-and-publish.yml
+  build-and-publish-ghcr:
+    if: inputs.registry == "ghcr.io"
     permissions:
-      packages: ${{ github.event.inputs.registry == 'ghcr.io' && 'write' || null }}
-    with:
-      registry:       ${{ inputs.registry }}
-      platforms:      ${{ inputs.platforms }}
-      build-args:     ${{ inputs.build-args }}
-    secrets: inherit
+      packages: write
+    uses: ./.github/workflows/build-and-publish.yml
+#    with:
+#      registry:       ${{ inputs.registry }}
+#      platforms:      ${{ inputs.platforms }}
+#      build-args:     ${{ inputs.build-args }}
+#    secrets: inherit
+
+  build-and-publish-default:
+    if: inputs.registry != "ghcr.io"
+    uses: ./.github/workflows/build-and-publish.yml
+#    with:
+#      registry:       ${{ inputs.registry }}
+#      platforms:      ${{ inputs.platforms }}
+#      build-args:     ${{ inputs.build-args }}
+#    secrets: inherit

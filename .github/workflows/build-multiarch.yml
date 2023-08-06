@@ -4,8 +4,10 @@ on:
   workflow_call:
     inputs:
       registry:
+        type: string
         default: ghcr.io
       username:
+        type: string
         default: ${{ github.actor }}
       registry-image:
         default: ghcr.io/${{ github.repository }}

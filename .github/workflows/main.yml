@@ -40,4 +40,4 @@ jobs:
       platforms:      ${{ inputs.platforms }}
       build-args:     ${{ inputs.build-args }}
     secrets:
-      password: ${{ secrets.DOCKERHUB_TOKEN }}
+      password:       ${{ secrets.DOCKERHUB_TOKEN }}

@@ -18,6 +18,8 @@ on:
 jobs:
   build-and-publish:
     uses: ./.github/workflows/build-and-publish.yml
+    permissions:
+      packages: ${{ inputs.registry == 'ghcr.io' && 'write' || null }}
     with:
       registry:       ${{ inputs.registry }}
       platforms:      ${{ inputs.platforms }}

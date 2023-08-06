@@ -5,13 +5,13 @@ on:
     inputs:
       registry:
         type: string
-        default: ghcr.io
+        default: docker.io
       username:
         type: string
-        default: ${{ github.actor }}
+        required: true
       registry-image:
         type: string
-        default: ghcr.io/${{ github.repository }}
+        required: true
       platforms:
         type: string
         default: '[ "linux/amd64", "linux/arm/v7" ]'

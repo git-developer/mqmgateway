@@ -2,9 +2,8 @@ name: build-and-publish
 
 on:
   workflow_dispatch:
-#    secrets: inherit
     inputs:
-      registry-provider:
+      registry:
         type: choice
         default: ghcr.io
         options:
@@ -18,24 +17,27 @@ on:
 
 jobs:
   build-multiarch-ghcr:
-    if: contains(fromJSON('["ghcr.io", "", null]'), inputs.registry-provider)
+    if: contains(fromJSON('["ghcr.io", "", null]'), inputs.registry)
     permissions:
       packages: write
     uses: ./.github/workflows/build-multiarch.yml
     with:
-      platforms: ${{ inputs.platforms }}
-      build-args: ${{ inputs.build-args }}
+      registry:       ghcr.io
+      username:       ${{ github.actor }}
+      registry-image: ghcr.io/${{ github.repository }}
+      platforms:      ${{ inputs.platforms }}
+      build-args:     ${{ inputs.build-args }}
     secrets:
-      password: ${{ secrets.GITHUB_TOKEN }}
+      password:       ${{ secrets.GITHUB_TOKEN }}
 
   build-multiarch-dockerhub:
-    if: inputs.registry-provider == 'docker.io'
+    if: inputs.registry == 'docker.io'
     uses: ./.github/workflows/build-multiarch.yml
     with:
-      registry: docker.io
-      username: ${{ vars.DOCKERHUB_USERNAME }}
+      registry:       docker.io
+      username:       ${{ vars.DOCKERHUB_USERNAME }}
       registry-image: ${{ vars.DOCKERHUB_USERNAME }}/${{ github.event.repository.name }}
-      platforms: ${{ inputs.platforms }}
-      build-args: ${{ inputs.build-args }}
+      platforms:      ${{ inputs.platforms }}
+      build-args:     ${{ inputs.build-args }}
     secrets:
       password: ${{ secrets.DOCKERHUB_TOKEN }}

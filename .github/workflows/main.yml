@@ -1,114 +1,38 @@
-name: ci
+name: build-and-publish
 
 on:
-  push:
-    branches:
-      - "main"
-      - "feature/docker"
+  workflow_dispatch:
+    inputs:
+      registry-provider:
+        type: choice
+        default: ghcr.io
+        options:
+          - ghcr.io
+          - docker.io
 
 env:
-  REGISTRY: ghcr.io
-  IMAGE_NAME: ghcr.io/${{ github.repository }}
-
-# permissions are needed if pushing to ghcr.io
-permissions:
-  packages: write
+  PLATFORMS: '[ "linux/amd64", "linux/arm/v6", "linux/arm/v7", "linux/arm64", "linux/i386" ]'
+  BUILD_ARGS: |
+    MQM_TEST_DEFAULT_WAIT_MS=400
 
 jobs:
-  build:
-    runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        platform:
-          - linux/amd64
-          - linux/arm/v6
-          - linux/arm/v7
-          - linux/arm64
-          - linux/i386
-    steps:
-      -
-        name: Checkout
-        uses: actions/checkout@v3
-      -
-        name: Docker meta
-        id: meta
-        uses: docker/metadata-action@v4
-        with:
-          images: ${{ env.IMAGE_NAME }}
-      -
-        name: Set up QEMU
-        uses: docker/setup-qemu-action@v2
-      -
-        name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v2
-      -
-        name: Login to GitHub Container Registry
-        uses: docker/login-action@v2
-        with:
-          registry: ${{ env.REGISTRY }}
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-      -
-        name: Build and push by digest
-        id: build
-        uses: docker/build-push-action@v4
-        with:
-          context: .
-          platforms: ${{ matrix.platform }}
-          labels: ${{ steps.meta.outputs.labels }}
-          outputs: type=image,name=${{ env.IMAGE_NAME }},push-by-digest=true,name-canonical=true,push=true
-          build-args: |
-            MQM_TEST_DEFAULT_WAIT_MS=400
-      -
-        name: Export digest
-        run: |
-          mkdir -p /tmp/digests
-          digest="${{ steps.build.outputs.digest }}"
-          touch "/tmp/digests/${digest#sha256:}"
-      -
-        name: Upload digest
-        uses: actions/upload-artifact@v3
-        with:
-          name: digests
-          path: /tmp/digests/*
-          if-no-files-found: error
-          retention-days: 1
+  build-multiarch-ghcr:
+    if: contains(fromJSON('["ghcr.io", "", null]'), inputs.registry-provider)
+    permissions:
+      packages: write
+    uses: ./.github/workflows/build-multiarch
+    with:
+      platforms: ${{ env.PLATFORMS }}
+      build-args: ${{ env.BUILD_ARGS }}
 
-  merge:
-    runs-on: ubuntu-latest
-    needs:
-      - build
-    steps:
-      -
-        name: Download digests
-        uses: actions/download-artifact@v3
-        with:
-          name: digests
-          path: /tmp/digests
-      -
-        name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v2
-      -
-        name: Docker meta
-        id: meta
-        uses: docker/metadata-action@v4
-        with:
-          images: ${{ env.IMAGE_NAME }}
-      -
-        name: Login to Docker Hub
-        uses: docker/login-action@v2
-        with:
-          registry: ${{ env.REGISTRY }}
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-      -
-        name: Create manifest list and push
-        working-directory: /tmp/digests
-        run: |
-          docker buildx imagetools create $(jq -cr '.tags | map("-t " + .) | join(" ")' <<< "$DOCKER_METADATA_OUTPUT_JSON") \
-            $(printf '${{ env.IMAGE_NAME }}@sha256:%s ' *)
-      -
-        name: Inspect image
-        run: |
-          docker buildx imagetools inspect ${{ env.IMAGE_NAME }}:${{ steps.meta.outputs.version }}
+  build-multiarch-dockerhub:
+    if: inputs.registry-provider == 'docker.io'
+    uses: ./.github/workflows/build-multiarch
+    with:
+      registry: docker.io
+      username: ${{ secrets.DOCKERHUB_USERNAME }}
+      registry-image: ${{ secrets.DOCKERHUB_USERNAME }}/${{ github.event.repository.name }}
+      platforms: ${{ env.PLATFORMS }}
+      build-args: ${{ env.BUILD_ARGS }}
+    secrets:
+      password: ${{ secrets.DOCKERHUB_TOKEN }}

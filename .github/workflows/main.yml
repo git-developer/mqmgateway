@@ -14,7 +14,6 @@ on:
       build-args:
         default: |
           MQM_TEST_DEFAULT_WAIT_MS=400
-    secrets: inherit
 
 jobs:
   build-multiarch-ghcr:
@@ -31,9 +30,9 @@ jobs:
     uses: ./.github/workflows/build-multiarch.yml
     with:
       registry: docker.io
-      username: ${{ secrets.DOCKERHUB_USERNAME }}
       registry-image: ${{ secrets.DOCKERHUB_USERNAME }}/${{ github.event.repository.name }}
       platforms: ${{ inputs.platforms }}
       build-args: ${{ inputs.build-args }}
     secrets:
+      username: ${{ secrets.DOCKERHUB_USERNAME }}
       password: ${{ secrets.DOCKERHUB_TOKEN }}

@@ -1,0 +1,7 @@
+{
+    "name":         "Multi-Platform Build and Publish",
+    "description":  "Build a container image for multiple target platforms and publish to a container registry",
+    "iconName":     "package-dependents",
+    "categories":   [ "continuous-integration" ],
+    "filePatterns": [ "^Dockerfile" ]
+}

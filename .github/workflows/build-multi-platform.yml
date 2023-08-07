@@ -1,27 +1,42 @@
-name: build-multiarch
+name: Multi-Platform Build and Publish
 
 on:
   workflow_call:
     inputs:
       registry:
+        description: 'Target registry for the image'
         type: string
         required: true
+        default: 'docker.io'
       username:
+        description: 'Username to login to the registry'
         type: string
         required: true
+        default: ${{ github.actor }}
       registry-image:
+        description: 'Name of the image incl. registry, e.g. "octocat/HelloWorld" for Docker Hub or "ghcr.io/octocat/HelloWorld" for GHCR'
         type: string
         required: true
+        default: ${{ github.repository }}
       platforms:
+        description: 'Target platforms in JSON list syntax, e.g. [ "linux/amd64", "linux/arm/v7" ]'
         type: string
         required: true
+        default: '[ "linux/amd64", "linux/arm/v7" ]'
+      build-context:
+        description: 'Build context for the image'
+        type: string
+        default: .
       build-args:
+        description: 'Build arguments for the image'
         type: string
       fail-fast:
+        description: 'Cancel all jobs if any job fails?'
         type: boolean
         default: true
     secrets:
       password:
+        description: 'Password or token to login to the registry'
 
 jobs:
   build:
@@ -58,7 +73,7 @@ jobs:
         id: build
         uses: docker/build-push-action@v4
         with:
-          context: .
+          context: ${{ inputs.build-context }}
           platforms: ${{ matrix.platform }}
           labels: ${{ steps.meta.outputs.labels }}
           outputs: type=image,name=${{ inputs.registry-image }},push-by-digest=true,name-canonical=true,push=true

@@ -1,0 +1,25 @@
+name: Multi-Platform Build and Publish to GitHub COntainer Registry
+
+on:
+  workflow_call:
+    inputs:
+      platforms:
+        description: 'Target platforms in JSON list syntax, e.g. [ "linux/amd64", "linux/arm/v7" ]'
+        type: string
+      build-args:
+        description: 'Build arguments for the image'
+        type: string
+
+jobs:
+  build-multi-platform-for-ghcr:
+    permissions:
+      packages: write
+    uses: ./.github/workflows/build-multi-platform.yml
+    with:
+      registry:       ghcr.io
+      username:       ${{ github.actor }}
+      registry-image: ghcr.io/${{ github.repository }}
+      platforms:      ${{ inputs.platforms }}
+      build-args:     ${{ inputs.build-args }}
+    secrets:
+      password:       ${{ secrets.GITHUB_TOKEN }}

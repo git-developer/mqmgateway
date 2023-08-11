@@ -12,7 +12,7 @@ on:
         description: 'Username to login to the registry'
         type: string
         required: true
-        default: ${{ github.actor }}
+        default: ${{ github.repository_owner }}
       registry-image:
         description: 'Name of the image incl. registry, e.g. "octocat/HelloWorld" for Docker Hub or "ghcr.io/octocat/HelloWorld" for GHCR'
         type: string

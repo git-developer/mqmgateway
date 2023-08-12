@@ -1,5 +1,5 @@
 name: Manually trigger Build and Publish
-run-name: Build for ${{ inputs.platforms }} and publish to ${{ inputs.registry }}
+run-name: Build and publish to ${{ inputs.registry }}
 
 on:
   # note: workflow_dispatch requires this workflow file to be on the default branch
@@ -43,8 +43,8 @@ jobs:
   prepare:
     runs-on: ubuntu-latest
     outputs:
+      build-args: ${{ steps.collect-build-args-json.outputs.result }}
       build-args-multiline: ${{ steps.collect-build-args-multiline.outputs.result }}
-      build-args:           ${{ steps.collect-build-args.outputs.result }}
     env:
       BUILD_ARG_ALPINE_VERSION: ${{ inputs.alpine-version }}
       BUILD_ARG_EXPRTK_URL: ${{ inputs.exprtk-url }}
@@ -53,14 +53,7 @@ jobs:
       BUILD_ARG_MQM_TEST_DEFAULT_WAIT_MS: ${{ inputs.test-timeout }}
       BUILD_ARG_MQM_TEST_LOGLEVEL: ${{ inputs.test-loglevel }}
     steps:
-      - id: collect-build-args-multiline
-        run: |
-          {
-            echo 'result<<EOF'
-            printenv | sed -nE 's/^BUILD_ARG_(.+)$/\1/p'
-            echo EOF
-          } >> "${GITHUB_OUTPUT}"
-      - id: collect-build-args
+      - id: collect-build-args-json
         run: |
           {
             printf result=
@@ -72,6 +65,13 @@ jobs:
             done
             printf ']'
           } >>"${GITHUB_OUTPUT}"
+      - id: collect-build-args-multiline
+        run: |
+          {
+            echo 'result<<EOF'
+            printenv | sed -nE 's/^BUILD_ARG_(.+)$/\1/p'
+            echo EOF
+          } >> "${GITHUB_OUTPUT}"
 
   build-multi-platform-to-ghcr:
     if: inputs.registry == 'GitHub Container Registry'

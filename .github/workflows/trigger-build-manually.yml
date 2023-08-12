@@ -42,6 +42,8 @@ on:
 jobs:
   prepare:
     runs-on: ubuntu-latest
+    outputs:
+      build-args:
 #    outputs:
 #      build-args: |
 #        ${{ format(

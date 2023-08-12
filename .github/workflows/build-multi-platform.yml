@@ -28,9 +28,6 @@ on:
         type: string
         default: .
       build-args:
-        description: 'Build arguments for the image as multiline string, one arg per line'
-        type: string
-      build-args-json:
         description: 'Build arguments for the image in JSON list syntax, e.g. [ "ARG1=foo", "ARG2=bar" ]'
         type: string
       fail-fast:
@@ -80,9 +77,7 @@ jobs:
           platforms: ${{ matrix.platform }}
           labels: ${{ steps.meta.outputs.labels }}
           outputs: type=image,name=${{ inputs.registry-image }},push-by-digest=true,name-canonical=true,push=true
-#          build-args: ${{ inputs.build-args }}
-          build-args: ${{ join(fromJSON(inputs.build-args-json), fromJSON('"\n"')) }}
-
+          build-args: ${{ join(fromJSON(inputs.build-args), fromJSON('"\n"')) }}
       -
         name: Export digest
         run: |

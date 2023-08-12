@@ -43,8 +43,8 @@ jobs:
   prepare:
     runs-on: ubuntu-latest
     outputs:
-      build-args: ${{ steps.collect-build-args.outputs.result }}
-      build-args-json: ${{ steps.collect-build-args-json.outputs.result }}
+      build-args-multiline: ${{ steps.collect-build-args-multiline.outputs.result }}
+      build-args:           ${{ steps.collect-build-args.outputs.result }}
     env:
       BUILD_ARG_ALPINE_VERSION: ${{ inputs.alpine-version }}
       BUILD_ARG_EXPRTK_URL: ${{ inputs.exprtk-url }}
@@ -53,24 +53,24 @@ jobs:
       BUILD_ARG_MQM_TEST_DEFAULT_WAIT_MS: ${{ inputs.test-timeout }}
       BUILD_ARG_MQM_TEST_LOGLEVEL: ${{ inputs.test-loglevel }}
     steps:
-      - id: collect-build-args
+      - id: collect-build-args-multiline
         run: |
           {
             echo 'result<<EOF'
             printenv | sed -nE 's/^BUILD_ARG_(.+)$/\1/p'
             echo EOF
           } >> "${GITHUB_OUTPUT}"
-      - id: collect-build-args-json
+      - id: collect-build-args
         run: |
           {
-          printf result=
-          printf '['
-          sep=''
-          printenv | sed -nE 's/^BUILD_ARG_(.+)$/\1/p' | while read -r arg; do
-            printf '%s"%s"' "${sep}" "${arg}"
-            sep=", "
-          done
-          printf ']'
+            printf result=
+            printf '['
+            sep=''
+            printenv | sed -nE 's/^BUILD_ARG_(.+)$/\1/p' | while read -r arg; do
+              printf '%s"%s"' "${sep}" "${arg}"
+              sep=", "
+            done
+            printf ']'
           } >>"${GITHUB_OUTPUT}"
 
   build-multi-platform-to-ghcr:
@@ -82,7 +82,6 @@ jobs:
     with:
       platforms:      ${{ inputs.platforms }}
       build-args:     ${{ needs.prepare.outputs.build-args }}
-      build-args-json:     ${{ needs.prepare.outputs.build-args-json }}
 
   build-multi-platform-to-dockerhub:
     if: inputs.registry == 'Docker Hub'
@@ -91,4 +90,3 @@ jobs:
     with:
       platforms:      ${{ inputs.platforms }}
       build-args:     ${{ needs.prepare.outputs.build-args }}
-      build-args-json:     ${{ needs.prepare.outputs.build-args-json }}

@@ -60,7 +60,7 @@ jobs:
     env:
       INPUT_RESULT: ${{ needs.job-a1.outputs.jobresult }}
     outputs:
-      build-args-multiline: ${{ join(fromJSON(needs.job-a1.outputs.jobresult), %0A) }}
+      build-args-multiline: ${{ join(fromJSON(needs.job-a1.outputs.jobresult), '%0A') }}
     steps:
      - run: printenv
      - run: echo "${INPUT_RESULT}"

@@ -82,7 +82,7 @@ jobs:
           } >> "${GITHUB_OUTPUT}"
 
   build-multi-platform-to-ghcr:
-    if: false && inputs.registry == 'GitHub Container Registry'
+    if: inputs.registry == 'GitHub Container Registry'
     permissions:
       packages: write
     uses: ./.github/workflows/build-ghcr.yml
@@ -92,7 +92,7 @@ jobs:
       build-args:     ${{ needs.prepare.outputs.build-args }}
 
   build-multi-platform-to-dockerhub:
-    if: false && inputs.registry == 'Docker Hub'
+    if: inputs.registry == 'Docker Hub'
     uses: ./.github/workflows/build-dockerhub.yml
     needs: prepare
     with:

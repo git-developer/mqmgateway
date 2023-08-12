@@ -34,18 +34,18 @@ jobs:
     outputs:
       jobresult: ${{ steps.step1.outputs.result }}
     env:
-      INPUT_ALPINE_VERSION: ${{ inputs.alpine-version }}
-      INPUT_EXPRTK_URL: ${{ inputs.exprtk-url }}
-      INPUT_MQM_TEST_SKIP: ${{ inputs.test-skip }}
-      INPUT_MQM_TEST_ALLOW_FAILURE: ${{ inputs.test-allow-failure }}
-      INPUT_MQM_TEST_DEFAULT_WAIT_MS: ${{ inputs.test-timeout }}
-      INPUT_MQM_TEST_LOGLEVEL: ${{ inputs.test-loglevel }}
+      INPUT2_ALPINE_VERSION: ${{ inputs.alpine-version }}
+      INPUT2_EXPRTK_URL: ${{ inputs.exprtk-url }}
+      INPUT2_MQM_TEST_SKIP: ${{ inputs.test-skip }}
+      INPUT2_MQM_TEST_ALLOW_FAILURE: ${{ inputs.test-allow-failure }}
+      INPUT2_MQM_TEST_DEFAULT_WAIT_MS: ${{ inputs.test-timeout }}
+      INPUT2_MQM_TEST_LOGLEVEL: ${{ inputs.test-loglevel }}
     steps:
       - id: step1
         run: |
           {
             echo 'result<<EOF'
-            printenv | sed -nE 's/^INPUT_(.+)$/\1/p'
+            printenv | sed -nE 's/^INPUT2_(.+)$/\1/p'
             echo EOF
           } >> "${GITHUB_OUTPUT}"
 

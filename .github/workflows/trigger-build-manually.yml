@@ -73,7 +73,6 @@ jobs:
             printenv | sed -nE 's/^INPUT_(.+)$/\1/p'
             echo EOF
           } >> "${GITHUB_OUTPUT}"
-      - run: cat "${GITHUB_OUTPUT}"
 
   build-multi-platform-to-ghcr:
     if: false && inputs.registry == 'GitHub Container Registry'

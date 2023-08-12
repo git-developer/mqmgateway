@@ -82,7 +82,7 @@ jobs:
     with:
       platforms:      ${{ inputs.platforms }}
       build-args:     ${{ needs.prepare.outputs.build-args }}
-      build-args-json:     ${{ needs.prepare.outputs.build-arg-jsons }}
+      build-args-json:     ${{ needs.prepare.outputs.build-args-json }}
 
   build-multi-platform-to-dockerhub:
     if: inputs.registry == 'Docker Hub'
@@ -91,4 +91,4 @@ jobs:
     with:
       platforms:      ${{ inputs.platforms }}
       build-args:     ${{ needs.prepare.outputs.build-args }}
-      build-args-json:     ${{ needs.prepare.outputs.build-arg-jsons }}
+      build-args-json:     ${{ needs.prepare.outputs.build-args-json }}

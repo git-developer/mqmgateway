@@ -77,8 +77,7 @@ jobs:
           platforms: ${{ matrix.platform }}
           labels: ${{ steps.meta.outputs.labels }}
           outputs: type=image,name=${{ inputs.registry-image }},push-by-digest=true,name-canonical=true,push=true
-          build-args: |
-            ${{ inputs.build-args }}
+          build-args: ${{ inputs.build-args }}
       -
         name: Export digest
         run: |

@@ -90,10 +90,9 @@ jobs:
       build-args:     ${{ needs.prepare.outputs.build-args }}
 
   print-build-args:
+    runs-on: ubuntu-latest
     needs: prepare
-    with:
-      build-args:     ${{ needs.prepare.outputs.build-args }}
     env:
-      INPUT_BUILD_ARGS: ${{ inputs.build-args }}
+      INPUT_BUILD_ARGS: ${{ needs.prepare.outputs.build-args }}
     steps:
      - run: printenv

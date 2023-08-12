@@ -45,7 +45,7 @@ jobs:
     outputs:
       build-args: |
         ${{ format(
-          'ALPINE_VERSION={0},EXPRTK_URL={1},MQM_TEST_SKIP={2},MQM_TEST_ALLOW_FAILURE={3},MQM_TEST_DEFAULT_WAIT_MS={4},MQM_TEST_LOGLEVEL={5}',
+          '[ "ALPINE_VERSION={0}", "EXPRTK_URL={1}", "MQM_TEST_SKIP={2}", "MQM_TEST_ALLOW_FAILURE={3}", "MQM_TEST_DEFAULT_WAIT_MS={4}", "MQM_TEST_LOGLEVEL={5}" ]',
           inputs.alpine-version,
           inputs.exprtk-url,
           inputs.test-skip,

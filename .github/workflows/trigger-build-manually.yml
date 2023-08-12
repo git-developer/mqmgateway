@@ -42,19 +42,26 @@ on:
 jobs:
   prepare:
     runs-on: ubuntu-latest
-    outputs:
-      build-args: |
-        ${{ format(
-          '[ "ALPINE_VERSION={0}", "EXPRTK_URL={1}", "MQM_TEST_SKIP={2}", "MQM_TEST_ALLOW_FAILURE={3}", "MQM_TEST_DEFAULT_WAIT_MS={4}", "MQM_TEST_LOGLEVEL={5}" ]',
-          inputs.alpine-version,
-          inputs.exprtk-url,
-          inputs.test-skip,
-          inputs.test-allow-failure,
-          inputs.test-timeout,
-          inputs.test-loglevel
-        ) }}
+#    outputs:
+#      build-args: |
+#        ${{ format(
+#          '[ "ALPINE_VERSION={0}", "EXPRTK_URL={1}", "MQM_TEST_SKIP={2}", "MQM_TEST_ALLOW_FAILURE={3}", "MQM_TEST_DEFAULT_WAIT_MS={4}", "MQM_TEST_LOGLEVEL={5}" ]',
+#          inputs.alpine-version,
+#          inputs.exprtk-url,
+#          inputs.test-skip,
+#          inputs.test-allow-failure,
+#          inputs.test-timeout,
+#          inputs.test-loglevel
+#        ) }}
+    env:
+      INPUT_ALPINE_VERSION: ${{ inputs.alpine-version }}
+      INPUT_EXPRTK_URL: ${{ inputs.exprtk-url }}
+      INPUT_MQM_TEST_SKIP: ${{ inputs.test-skip }}
+      INPUT_MQM_TEST_ALLOW_FAILURE: ${{ inputs.test-allow-failure }}
+      INPUT_MQM_TEST_DEFAULT_WAIT_MS: ${{ inputs.test-timeout }}
+      INPUT_MQM_TEST_LOGLEVEL: ${{ inputs.test-loglevel }}
     steps:
-      - run: "true"
+      - run: printf build-args= && $(printenv | sed -nE "s/^INPUT_(.+)$/\1/p") >> "${GITHUB_OUTPUT}"
 
   build-multi-platform-to-ghcr:
     if: inputs.registry == 'GitHub Container Registry'

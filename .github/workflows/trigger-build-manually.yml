@@ -8,10 +8,10 @@ on:
       registry:
         description: 'Target registry'
         type: choice
-        default: GitHub Container Registry
         options:
           - GitHub Container Registry
           - Docker Hub
+        default: GitHub Container Registry
       platforms:
         description: 'Target platforms in JSON list syntax'
         default: '[ "linux/amd64", "linux/arm/v6", "linux/arm/v7", "linux/arm64", "linux/i386" ]'
@@ -23,15 +23,20 @@ on:
         default: 'https://github.com/ArashPartow/exprtk/raw/master/exprtk.hpp'
       test-skip:
         description: 'Skip tests?'
+        type: boolean
         default: false
       test-allow-failure:
         description: 'Continue build if tests fail?'
+        type: boolean
         default: false
       test-timeout:
         description: 'Timeout for tests (in ms)'
+        type: number
         default: 400
       test-loglevel:
         description: 'Log level for tests (1-5, higher is more verbose)'
+        type: choice
+        options: [ 1, 2, 3, 4, 5 ]
         default: 3
 
 jobs:
@@ -40,7 +45,7 @@ jobs:
     outputs:
       build-args: |
         ${{ format(
-          'ALPINE_VERSION={0} EXPRTK_URL={1} MQM_TEST_SKIP={2} MQM_TEST_ALLOW_FAILURE={3} MQM_TEST_DEFAULT_WAIT_MS={4} MQM_TEST_LOGLEVEL={5}',
+          'ALPINE_VERSION="{0}" EXPRTK_URL="{1}" MQM_TEST_SKIP="{2}" MQM_TEST_ALLOW_FAILURE="{3}" MQM_TEST_DEFAULT_WAIT_MS="{4}" MQM_TEST_LOGLEVEL="{5}"',
           inputs.alpine-version,
           inputs.exprtk-url,
           inputs.test-skip,

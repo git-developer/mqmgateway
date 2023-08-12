@@ -43,7 +43,7 @@ jobs:
   prepare:
     runs-on: ubuntu-latest
     outputs:
-      build-args:
+      build-args: ${{ steps.create-build-args.outputs.build-args }}
 #    outputs:
 #      build-args: |
 #        ${{ format(
@@ -66,7 +66,8 @@ jobs:
 #      - run: true
 #      - run: { printf build-args= && printenv | sort | sed -nE "s/^INPUT_(.+)$/\1/p"; }  >>"${GITHUB_OUTPUT}"
 #      - run: printenv | sed -nE "s/^INPUT_(.+)$/\1/p" | xargs -0 printf build-args=%q >>"${GITHUB_OUTPUT}"
-      - run: |
+      - id: create-build-args
+        run: |
           {
             echo 'build-args<<EOF'
             printenv | sed -nE 's/^INPUT_(.+)$/\1/p'

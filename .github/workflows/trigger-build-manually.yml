@@ -105,4 +105,4 @@ jobs:
     env:
       COLLECTED_BUILD_ARGS: ${{ needs.prepare.outputs.build-args }}
     steps:
-     - run: $COLLECTED_BUILD_ARGS
+     - run: echo "${COLLECTED_BUILD_ARGS}"

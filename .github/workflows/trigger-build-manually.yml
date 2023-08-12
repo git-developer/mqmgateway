@@ -65,11 +65,11 @@ jobs:
 #      - run: { printf build-args= && printenv | sort | sed -nE "s/^INPUT_(.+)$/\1/p"; }  >>"${GITHUB_OUTPUT}"
 #      - run: printenv | sed -nE "s/^INPUT_(.+)$/\1/p" | xargs -0 printf build-args=%q >>"${GITHUB_OUTPUT}"
       - run: |
-        {
-          echo 'build-args<<EOF'
-          printenv | sed -nE 's/^INPUT_(.+)$/\1/p'
-          echo EOF
-        } >> "${GITHUB_OUTPUT}"
+          {
+            echo 'build-args<<EOF'
+            printenv | sed -nE 's/^INPUT_(.+)$/\1/p'
+            echo EOF
+          } >> "${GITHUB_OUTPUT}"
 
   build-multi-platform-to-ghcr:
     if: inputs.registry == 'GitHub Container Registry'

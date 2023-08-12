@@ -61,11 +61,8 @@ jobs:
       INPUT_MQM_TEST_DEFAULT_WAIT_MS: ${{ inputs.test-timeout }}
       INPUT_MQM_TEST_LOGLEVEL: ${{ inputs.test-loglevel }}
     steps:
-      - run: printenv
-      - run: printf build-args= && printenv | sort | sed -nE "s/^INPUT_(.+)$/\1/p"
 #      - run: { printf build-args= && printenv | sort | sed -nE "s/^INPUT_(.+)$/\1/p"; }  >>"${GITHUB_OUTPUT}"
       - run: printenv | sed -nE "s/^INPUT_(.+)$/\1/p" | xargs -0 printf build-args=%q >>"${GITHUB_OUTPUT}"
-      - run: false
 
   build-multi-platform-to-ghcr:
     if: inputs.registry == 'GitHub Container Registry'

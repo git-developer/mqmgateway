@@ -21,5 +21,6 @@ jobs:
       registry-image: ghcr.io/${{ github.repository }}
       platforms:      ${{ inputs.platforms }}
       build-args:     ${{ inputs.build-args }}
+      build-args-json:     ${{ inputs.build-args-json }}
     secrets:
       password:       ${{ secrets.GITHUB_TOKEN }}

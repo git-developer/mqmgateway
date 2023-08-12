@@ -19,5 +19,6 @@ jobs:
       registry-image: ${{ vars.DOCKERHUB_USERNAME }}/${{ github.event.repository.name }}
       platforms:      ${{ inputs.platforms }}
       build-args:     ${{ inputs.build-args }}
+      build-args-json:     ${{ inputs.build-args-json }}
     secrets:
       password:       ${{ secrets.DOCKERHUB_TOKEN }}

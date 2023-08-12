@@ -33,6 +33,13 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       jobresult: ${{ steps.step1.outputs.result }}
+    env:
+      INPUT_ALPINE_VERSION: ${{ inputs.alpine-version }}
+      INPUT_EXPRTK_URL: ${{ inputs.exprtk-url }}
+      INPUT_MQM_TEST_SKIP: ${{ inputs.test-skip }}
+      INPUT_MQM_TEST_ALLOW_FAILURE: ${{ inputs.test-allow-failure }}
+      INPUT_MQM_TEST_DEFAULT_WAIT_MS: ${{ inputs.test-timeout }}
+      INPUT_MQM_TEST_LOGLEVEL: ${{ inputs.test-loglevel }}
     steps:
       - id: step1
         run: |

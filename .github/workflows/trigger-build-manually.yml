@@ -51,28 +51,7 @@ jobs:
       BUILD_ARG_MQM_TEST_ALLOW_FAILURE: ${{ inputs.test-allow-failure }}
       BUILD_ARG_MQM_TEST_DEFAULT_WAIT_MS: ${{ inputs.test-timeout }}
       BUILD_ARG_MQM_TEST_LOGLEVEL: ${{ inputs.test-loglevel }}
-#    outputs:
-#      build-args: |
-#        ${{ format(
-#          '[ "ALPINE_VERSION={0}", "EXPRTK_URL={1}", "MQM_TEST_SKIP={2}", "MQM_TEST_ALLOW_FAILURE={3}", "MQM_TEST_DEFAULT_WAIT_MS={4}", "MQM_TEST_LOGLEVEL={5}" ]',
-#          inputs.alpine-version,
-#          inputs.exprtk-url,
-#          inputs.test-skip,
-#          inputs.test-allow-failure,
-#          inputs.test-timeout,
-#          inputs.test-loglevel
-#        ) }}
-#    env:
-#      INPUT_ALPINE_VERSION: ${{ inputs.alpine-version }}
-#      INPUT_EXPRTK_URL: ${{ inputs.exprtk-url }}
-#      INPUT_MQM_TEST_SKIP: ${{ inputs.test-skip }}
-#      INPUT_MQM_TEST_ALLOW_FAILURE: ${{ inputs.test-allow-failure }}
-#      INPUT_MQM_TEST_DEFAULT_WAIT_MS: ${{ inputs.test-timeout }}
-#      INPUT_MQM_TEST_LOGLEVEL: ${{ inputs.test-loglevel }}
     steps:
-#      - run: true
-#      - run: { printf build-args= && printenv | sort | sed -nE "s/^INPUT_(.+)$/\1/p"; }  >>"${GITHUB_OUTPUT}"
-#      - run: printenv | sed -nE "s/^INPUT_(.+)$/\1/p" | xargs -0 printf build-args=%q >>"${GITHUB_OUTPUT}"
       - id: collect-build-args
         run: |
           {
@@ -98,11 +77,3 @@ jobs:
     with:
       platforms:      ${{ inputs.platforms }}
       build-args:     ${{ needs.prepare.outputs.build-args }}
-
-  print-build-args:
-    runs-on: ubuntu-latest
-    needs: prepare
-    env:
-      COLLECTED_BUILD_ARGS: ${{ needs.prepare.outputs.build-args }}
-    steps:
-     - run: echo "${COLLECTED_BUILD_ARGS}"

@@ -44,10 +44,15 @@ jobs:
       - id: step1
         run: |
           {
-            echo 'result<<EOF'
-            printenv | sed -nE 's/^BUILD_ARG_(.+)$/\1/p'
-            echo EOF
-          } >> "${GITHUB_OUTPUT}"
+          printf result=
+          printf '['
+          sep=''
+          printenv | sed -nE 's/^BUILD_ARG_(.+)$/\1/p' | while read -r arg; do
+            printf '%s"%s"' "${sep}" "${arg}"
+            sep=", "
+          done
+          printf ']'
+          } >>"${GITHUB_OUTPUT}"
 
   job-a2:
     runs-on: ubuntu-latest

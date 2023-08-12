@@ -29,7 +29,7 @@ on:
         default: 3
 
 jobs:
-  job1:
+  job-a1:
     runs-on: ubuntu-latest
     outputs:
       jobresult: ${{ steps.step1.outputs.result }}
@@ -49,13 +49,36 @@ jobs:
             echo EOF
           } >> "${GITHUB_OUTPUT}"
 
-  job2:
+  job-a2:
     runs-on: ubuntu-latest
-    needs: job1
+    needs: job-a1
     env:
-      INPUT_RESULT: ${{ needs.job1.outputs.jobresult }}
+      INPUT_RESULT: ${{ needs.job-a1.outputs.jobresult }}
     steps:
      - run: printenv
+     - run: echo "${INPUT_RESULT}"
+
+  job-b1:
+    runs-on: ubuntu-latest
+    outputs:
+      jobresult: ${{ steps.step1.outputs.result }}
+    steps:
+      - id: step1
+        run: |
+          {
+            echo 'result<<EOF'
+            printenv | sed -nE 's/^INPUT_(.+)$/\1/p'
+            echo EOF
+          } >> "${GITHUB_OUTPUT}"
+
+  job-b2:
+    runs-on: ubuntu-latest
+    needs: job-b1
+    env:
+      INPUT_RESULT: ${{ needs.job-b1.outputs.jobresult }}
+    steps:
+     - run: printenv
+     - run: echo "${INPUT_RESULT}"
 
   job3:
     runs-on: ubuntu-latest

@@ -63,7 +63,8 @@ jobs:
     steps:
       - run: printenv
       - run: printf build-args= && printenv | sort | sed -nE "s/^INPUT_(.+)$/\1/p"
-      - run: printf build-args= && printenv | sort | sed -nE "s/^INPUT_(.+)$/\1/p" >>$GITHUB_OUTPUT
+#      - run: { printf build-args= && printenv | sort | sed -nE "s/^INPUT_(.+)$/\1/p"; }  >>"${GITHUB_OUTPUT}"
+      - run: printenv | sed -nE "s/^INPUT_(.+)$/\1/p" | xargs -0 printf build-args=%q >>"${GITHUB_OUTPUT}"
       - run: false
 
   build-multi-platform-to-ghcr:

@@ -9,6 +9,9 @@ on:
       build-args:
         description: 'Build arguments for the image'
         type: string
+      build-args-json:
+        description: 'Build arguments for the image'
+        type: string
 
 jobs:
   build-multi-platform-for-ghcr:

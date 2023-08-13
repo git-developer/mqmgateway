@@ -1,4 +1,4 @@
-name: Manually trigger Build and Publish
+name: Trigger Build and Publish
 run-name: Build and publish to ${{ inputs.registry }}
 
 on:
@@ -17,18 +17,18 @@ on:
         default: '[ "linux/amd64", "linux/arm/v6", "linux/arm/v7", "linux/arm64", "linux/i386" ]'
       BUILD_ARG_ALPINE_VERSION:
         description: 'Version of Alpine Linux base image'
-        default: latest
+#        default: latest
       BUILD_ARG_EXPRTK_URL:
         description: 'URL to exprtk header file'
-        default: 'https://github.com/ArashPartow/exprtk/raw/master/exprtk.hpp'
+#        default: 'https://github.com/ArashPartow/exprtk/raw/master/exprtk.hpp'
       BUILD_ARG_MQM_TEST_SKIP:
         description: 'Skip tests?'
         type: boolean
-        default: false
+#        default: false
       BUILD_ARG_MQM_TEST_ALLOW_FAILURE:
         description: 'Continue build if tests fail?'
         type: boolean
-        default: false
+#        default: false
       BUILD_ARG_MQM_TEST_DEFAULT_WAIT_MS:
         description: 'Timeout for tests (in ms)'
         type: number
@@ -37,6 +37,36 @@ on:
         description: 'Log level for tests (1-5, higher is more verbose)'
         type: choice
         options: [ 1, 2, 3, 4, 5 ]
+        default: 3
+
+  workflow_call:
+    inputs:
+      registry:
+        description: 'Target registry'
+        type: string
+        default: GitHub Container Registry
+      platforms:
+        description: 'Target platforms in JSON list syntax'
+        type: string
+        default: '[ "linux/amd64", "linux/arm/v6", "linux/arm/v7", "linux/arm64", "linux/i386" ]'
+      BUILD_ARG_ALPINE_VERSION:
+        description: 'Version of Alpine Linux base image'
+        type: string
+      BUILD_ARG_EXPRTK_URL:
+        description: 'URL to exprtk header file'
+      BUILD_ARG_MQM_TEST_SKIP:
+        description: 'Skip tests?'
+        type: boolean
+      BUILD_ARG_MQM_TEST_ALLOW_FAILURE:
+        description: 'Continue build if tests fail?'
+        type: boolean
+      BUILD_ARG_MQM_TEST_DEFAULT_WAIT_MS:
+        description: 'Timeout for tests (in ms)'
+        type: number
+        default: 400
+      BUILD_ARG_MQM_TEST_LOGLEVEL:
+        description: 'Log level for tests (1-5, higher is more verbose)'
+        type: string
         default: 3
 
 jobs:

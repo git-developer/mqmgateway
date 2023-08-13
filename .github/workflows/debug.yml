@@ -44,6 +44,8 @@ jobs:
     steps:
       - uses: actions/github-script@v6
         id: step1
+        env:
+          DATA: ${{ inputs }}
         with:
           result-encoding: string
           script: |

@@ -22,5 +22,5 @@ runs:
         script: |
           const prefix = process.env.prefix;
           return Object.entries(JSON.parse(process.env.properties))
-            .filter(([key, value]) => key.startsWith(prefix))
+            .filter(([key, value]) => key.startsWith(prefix) && value)
             .map(([key, value]) => key.replace(prefix, '').concat('=', value));

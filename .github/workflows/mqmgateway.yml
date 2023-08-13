@@ -8,11 +8,11 @@ on:
       registry:
         description: 'Target registry'
         type: string
-#        type: choice
-#        options:
-#          - GitHub Container Registry
-#          - Docker Hub
-#        default: GitHub Container Registry
+        type: choice
+        options:
+          - GitHub Container Registry
+          - Docker Hub
+        default: GitHub Container Registry
       platforms:
         description: 'Target platforms in JSON list syntax'
         default: '[ "linux/amd64", "linux/arm/v6", "linux/arm/v7", "linux/arm64", "linux/i386" ]'
@@ -41,7 +41,6 @@ on:
       registry:
         description: 'Target registry'
         type: string
-#        default: GitHub Container Registry
       platforms:
         description: 'Target platforms in JSON list syntax'
         type: string

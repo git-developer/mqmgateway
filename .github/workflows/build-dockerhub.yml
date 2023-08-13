@@ -12,7 +12,7 @@ on:
 
 jobs:
   build-multi-platform-for-dockerhub:
-    uses: ./.github/workflows/build-multi-platform.yml
+    uses: .github/workflows/build-multi-platform.yml
     with:
       registry:       docker.io
       username:       ${{ vars.DOCKERHUB_USERNAME }}

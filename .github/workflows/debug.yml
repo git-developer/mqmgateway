@@ -43,7 +43,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       VALUE: ${{ inputs.buildarg-alpine-version }}
-#      DATA: ${{ toJSON(inputs.*) }}
+      DATA: ${{ toJSON(inputs) }}
     outputs:
       job-result: ${{steps.step1.outputs.result}}
     steps:
@@ -61,7 +61,6 @@ jobs:
                    .toUpperCase()
                    .replaceAll(/[^\w]/g, '_')
                    .concat('=', value)));
-      - run: echo "${{steps.step1.outputs.result}}"
   job2:
     runs-on: ubuntu-latest
     needs: job1

@@ -63,7 +63,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - id: to-env
-        uses: .github/actions/to-env
+        uses: ./.github/actions/to-env
         with:
           prefix: 'buildarg-'
           properties: ${{ toJSON(inputs) }}

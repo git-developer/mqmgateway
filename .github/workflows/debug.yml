@@ -42,8 +42,8 @@ jobs:
   job1:
     runs-on: ubuntu-latest
     env:
-      VALUE: ${{ fromJSON(inputs.buildarg-alpine-version) }}
-      DATA: ${{ fromJSON(inputs) }}
+      VALUE: ${{ inputs.buildarg-alpine-version }}
+      DATA: ${{ inputs }}
     steps:
       - uses: actions/github-script@v6
         id: step1

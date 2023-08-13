@@ -56,3 +56,7 @@ jobs:
                    .replaceAll(/[^\w]/g, '_')
                    .concat('=', value));
       - run: echo "${{steps.step1.outputs.result}}"
+  job2:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "${{steps.step1.outputs.result}}"

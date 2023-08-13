@@ -41,12 +41,12 @@ on:
 jobs:
   job1:
     runs-on: ubuntu-latest
+    env:
+      VALUE: ${{ fromJSON(inputs.buildarg-alpine-version) }}
+      DATA: ${{ fromJSON(inputs) }}
     steps:
       - uses: actions/github-script@v6
         id: step1
-        env:
-          VALUE: ${{ fromJSON(inputs.buildarg-alpine-version) }}
-          DATA: ${{ fromJSON(inputs) }}
         with:
           result-encoding: string
           script: |

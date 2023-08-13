@@ -55,3 +55,17 @@ jobs:
     needs: inputs-to-array
     steps:
       - run: echo "${{needs.inputs-to-array.outputs.result}}"
+
+  job3:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: ./.github/actions/to-env
+        with:
+          prefix: 'buildarg-'
+          properties: ${{ toJSON(inputs) }}
+  job4:
+    runs-on: ubuntu-latest
+    needs: job3
+    steps:
+      - run: echo "${{needs.job3.outputs.result}}"

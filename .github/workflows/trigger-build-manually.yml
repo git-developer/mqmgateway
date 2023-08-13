@@ -15,31 +15,48 @@ on:
       platforms:
         description: 'Target platforms in JSON list syntax'
         default: '[ "linux/amd64", "linux/arm/v6", "linux/arm/v7", "linux/arm64", "linux/i386" ]'
-      alpine-version:
+      BUILD_ARG_ALPINE_VERSION:
         description: 'Version of Alpine Linux base image'
         default: latest
-      exprtk-url:
+      BUILD_ARG_EXPRTK_UTL:
         description: 'URL to exprtk header file'
         default: 'https://github.com/ArashPartow/exprtk/raw/master/exprtk.hpp'
-      test-skip:
+      BUILD_ARG_MQM_TEST_SKIP:
         description: 'Skip tests?'
         type: boolean
         default: false
-      test-allow-failure:
+      BUILD_ARG_MQM_TEST_ALLOW_FAILURE:
         description: 'Continue build if tests fail?'
         type: boolean
         default: false
-      test-timeout:
+      BUILD_ARG_MQM_TEST_DEFAULT_WAIT_MS:
         description: 'Timeout for tests (in ms)'
         type: number
         default: 400
-      test-loglevel:
+      BUILD_ARG_MQM_TEST_LOGLEVEL:
         description: 'Log level for tests (1-5, higher is more verbose)'
         type: choice
         options: [ 1, 2, 3, 4, 5 ]
         default: 3
 
 jobs:
+  inputs-to-array:
+    runs-on: ubuntu-latest
+    env:
+      PREFIX: 'BUILD_ARG_'
+      INPUTS: ${{ toJSON(inputs) }}
+    outputs:
+      result: ${{ steps.run-script.outputs.result }}
+    steps:
+      - uses: actions/github-script@v6
+        id: run-script
+        with:
+          script: |
+            const prefix = process.env.PREFIX;
+            return JSON.stringify(Object.entries(JSON.parse(process.env.INPUTS))
+              .filter(([key, value]) => key.startsWith(prefix))
+              .map(([key, value]) => key.replace(prefix, '').concat('=', value)));
+
   prepare:
     runs-on: ubuntu-latest
     outputs:
@@ -78,15 +95,15 @@ jobs:
     permissions:
       packages: write
     uses: ./.github/workflows/build-ghcr.yml
-    needs: prepare
+    needs: inputs-to-array
     with:
       platforms:      ${{ inputs.platforms }}
-      build-args:     ${{ needs.prepare.outputs.build-args }}
+      build-args:     ${{ needs.inputs-to-array.outputs.result }}
 
   build-multi-platform-to-dockerhub:
     if: inputs.registry == 'Docker Hub'
     uses: ./.github/workflows/build-dockerhub.yml
-    needs: prepare
+    needs: inputs-to-array
     with:
       platforms:      ${{ inputs.platforms }}
-      build-args:     ${{ needs.prepare.outputs.build-args }}
+      build-args:     ${{ needs.inputs-to-array.outputs.result }}

@@ -30,19 +30,19 @@ on:
         default: false
 
 jobs:
-  job1:
+  inputs-to-array:
     runs-on: ubuntu-latest
     env:
+      PREFIX: 'buildarg-'
       INPUTS: ${{ toJSON(inputs) }}
     outputs:
-      job-result: ${{steps.step1.outputs.result}}
+      result: ${{ steps.run-script.outputs.result }}
     steps:
       - uses: actions/github-script@v6
-        id: step1
+        id: run-script
         with:
-#          result-encoding: string
           script: |
-            const prefix = 'buildarg-';
+            const prefix = process.env.PREFIX;
             return JSON.stringify(Object.entries(JSON.parse(process.env.INPUTS))
               .filter(([key, value]) => key.startsWith(prefix))
               .map(([key, value]) =>
@@ -52,6 +52,6 @@ jobs:
                    .concat('=', value)));
   job2:
     runs-on: ubuntu-latest
-    needs: job1
+    needs: inputs-to-array
     steps:
-      - run: echo "${{needs.job1.outputs.job-result}}"
+      - run: echo "${{needs.inputs-to-array.outputs.result}}"

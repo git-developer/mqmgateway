@@ -54,6 +54,7 @@ on:
         type: string
       BUILD_ARG_EXPRTK_URL:
         description: 'URL to exprtk header file'
+        type: string
       BUILD_ARG_MQM_TEST_SKIP:
         description: 'Skip tests?'
         type: boolean

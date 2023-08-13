@@ -33,8 +33,7 @@ jobs:
   job1:
     runs-on: ubuntu-latest
     env:
-      VALUE: ${{ inputs.buildarg-alpine-version }}
-      DATA: ${{ toJSON(inputs) }}
+      INPUTS: ${{ toJSON(inputs) }}
     outputs:
       job-result: ${{steps.step1.outputs.result}}
     steps:
@@ -44,8 +43,7 @@ jobs:
           result-encoding: string
           script: |
             const prefix = 'buildarg-';
-            return JSON.stringify(Object.entries(JSON.parse(process.env.DATA)));
-            JSON.stringify(Object.entries(process.env)
+            return JSON.stringify(Object.entries(JSON.parse(process.env.INPUTS))
               .filter(([key, value]) => key.startsWith(prefix))
               .map(([key, value]) =>
                 key.replace(prefix, '')

@@ -45,9 +45,9 @@ jobs:
     outputs:
       result: ${{ steps.to-env.outputs.result }}
     steps:
-      - uses: actions/checkout@v3
+#      - uses: actions/checkout@v3
       - id: to-env
-        uses: ./.github/actions/to-env
+        uses: .github/actions/to-env
         with:
           prefix: BUILD_ARG_
           properties: ${{ toJSON(inputs) }}
@@ -106,7 +106,7 @@ jobs:
     if: inputs.registry == 'GitHub Container Registry'
     permissions:
       packages: write
-    uses: ./.github/workflows/build-ghcr.yml
+    uses: .github/workflows/build-ghcr.yml
     needs: prepare
     with:
       platforms:      ${{ inputs.platforms }}
@@ -114,7 +114,7 @@ jobs:
 
   build-multi-platform-to-dockerhub:
     if: inputs.registry == 'Docker Hub'
-    uses: ./.github/workflows/build-dockerhub.yml
+    uses: .github/workflows/build-dockerhub.yml
     needs: prepare
     with:
       platforms:      ${{ inputs.platforms }}

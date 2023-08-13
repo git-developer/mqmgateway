@@ -53,7 +53,7 @@ jobs:
           result-encoding: string
           script: |
             const prefix = 'buildarg-';
-            return JSON.stringify(Object.entries(process.env));
+            return JSON.stringify(Object.entries(process.env.DATA));
             JSON.stringify(Object.entries(process.env)
               .filter(([key, value]) => key.startsWith(prefix))
               .map(([key, value]) =>

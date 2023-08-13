@@ -18,7 +18,7 @@ on:
       BUILD_ARG_ALPINE_VERSION:
         description: 'Version of Alpine Linux base image'
         default: latest
-      BUILD_ARG_EXPRTK_UTL:
+      BUILD_ARG_EXPRTK_URL:
         description: 'URL to exprtk header file'
         default: 'https://github.com/ArashPartow/exprtk/raw/master/exprtk.hpp'
       BUILD_ARG_MQM_TEST_SKIP:

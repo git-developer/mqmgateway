@@ -70,5 +70,7 @@ jobs:
   job4:
     runs-on: ubuntu-latest
     needs: job3
+    env:
+      ARGS: ${{ join(fromJSON(needs.job3.outputs.result), fromJSON('"\n"')) }}
     steps:
-      - run: echo "${{needs.job3.outputs.result}}"
+      - run: echo "$ARGS"

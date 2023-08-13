@@ -28,15 +28,6 @@ on:
         description: 'Continue build if tests fail?'
         type: boolean
         default: false
-      buildarg-test-timeout:
-        description: 'Timeout for tests (in ms)'
-        type: number
-        default: 400
-      buildarg-test-loglevel:
-        description: 'Log level for tests (1-5, higher is more verbose)'
-        type: choice
-        options: [ 1, 2, 3, 4, 5 ]
-        default: 3
 
 jobs:
   job1:
@@ -53,7 +44,7 @@ jobs:
           result-encoding: string
           script: |
             const prefix = 'buildarg-';
-            return JSON.stringify(Object.entries(process.env.DATA));
+            return JSON.stringify(Object.entries(JSON.parse(process.env.DATA)));
             JSON.stringify(Object.entries(process.env)
               .filter(([key, value]) => key.startsWith(prefix))
               .map(([key, value]) =>

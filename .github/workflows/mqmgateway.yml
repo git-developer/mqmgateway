@@ -7,7 +7,6 @@ on:
     inputs:
       registry:
         description: 'Target registry'
-        type: string
         type: choice
         options:
           - GitHub Container Registry

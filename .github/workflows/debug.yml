@@ -45,12 +45,13 @@ jobs:
       - uses: actions/github-script@v6
         id: step1
         env:
+          VALUE: ${{ fromJSON(inputs.buildarg-alpine-version) }}
           DATA: ${{ fromJSON(inputs) }}
         with:
           result-encoding: string
           script: |
             const prefix = 'buildarg-';
-            return JSON.stringify(Object.entries(process.env));
+            return JSON.stringify(Object.entries(context.inputs));
             JSON.stringify(Object.entries(process.env)
               .filter(([key, value]) => key.startsWith(prefix))
               .map(([key, value]) =>

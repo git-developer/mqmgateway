@@ -63,7 +63,6 @@ on:
       BUILD_ARG_MQM_TEST_LOGLEVEL:
         description: 'Log level for tests (1-5, higher is more verbose)'
         type: number
-        default: 3
 
 jobs:
   prepare:

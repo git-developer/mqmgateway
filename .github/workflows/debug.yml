@@ -58,9 +58,12 @@ jobs:
 
   job3:
     runs-on: ubuntu-latest
+    outputs:
+      result: ${{ steps.to-env.outputs.result }}
     steps:
       - uses: actions/checkout@v3
-      - uses: ./.github/actions/to-env
+      - id: to-env
+        uses: ./.github/actions/to-env
         with:
           prefix: 'buildarg-'
           properties: ${{ toJSON(inputs) }}

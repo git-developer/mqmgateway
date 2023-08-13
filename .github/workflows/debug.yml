@@ -43,7 +43,9 @@ jobs:
     runs-on: ubuntu-latest
     env:
       VALUE: ${{ inputs.buildarg-alpine-version }}
-      DATA: ${{ toJSON(inputs.*) }}
+#      DATA: ${{ toJSON(inputs.*) }}
+    outputs:
+      job-result: ${{steps.step1.outputs.result}}
     steps:
       - uses: actions/github-script@v6
         id: step1
@@ -62,5 +64,6 @@ jobs:
       - run: echo "${{steps.step1.outputs.result}}"
   job2:
     runs-on: ubuntu-latest
+    needs: job1
     steps:
-      - run: echo "${{steps.step1.outputs.result}}"
+      - run: echo "${{needs.job1.outputs.job-result}}"

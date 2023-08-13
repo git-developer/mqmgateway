@@ -55,4 +55,4 @@ jobs:
                    .toUpperCase()
                    .replaceAll(/[^\w]/g, '_')
                    .concat('=', value));
-        run: echo "${{steps.step1.outputs.result}}"
+      - run: echo "${{steps.step1.outputs.result}}"

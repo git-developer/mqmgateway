@@ -40,6 +40,18 @@ on:
         default: 3
 
 jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    outputs:
+      result: ${{ steps.to-env.outputs.result }}
+    steps:
+      - uses: actions/checkout@v3
+      - id: to-env
+        uses: ./.github/actions/to-env
+        with:
+          prefix: BUILD_ARG_
+          properties: ${{ toJSON(inputs) }}
+
   inputs-to-array:
     runs-on: ubuntu-latest
     env:
@@ -57,7 +69,7 @@ jobs:
               .filter(([key, value]) => key.startsWith(prefix))
               .map(([key, value]) => key.replace(prefix, '').concat('=', value)));
 
-  prepare:
+  prepare-legacy:
     runs-on: ubuntu-latest
     outputs:
       build-args: ${{ steps.collect-build-args-json.outputs.result }}
@@ -95,15 +107,15 @@ jobs:
     permissions:
       packages: write
     uses: ./.github/workflows/build-ghcr.yml
-    needs: inputs-to-array
+    needs: prepare
     with:
       platforms:      ${{ inputs.platforms }}
-      build-args:     ${{ needs.inputs-to-array.outputs.result }}
+      build-args:     ${{ needs.prepare.outputs.result }}
 
   build-multi-platform-to-dockerhub:
     if: inputs.registry == 'Docker Hub'
     uses: ./.github/workflows/build-dockerhub.yml
-    needs: inputs-to-array
+    needs: prepare
     with:
       platforms:      ${{ inputs.platforms }}
-      build-args:     ${{ needs.inputs-to-array.outputs.result }}
+      build-args:     ${{ needs.prepare.outputs.result }}

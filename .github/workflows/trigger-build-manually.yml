@@ -7,10 +7,11 @@ on:
     inputs:
       registry:
         description: 'Target registry'
-        type: choice
-        options:
-          - GitHub Container Registry
-          - Docker Hub
+          type: string
+#        type: choice
+#        options:
+#          - GitHub Container Registry
+#          - Docker Hub
 #        default: GitHub Container Registry
       platforms:
         description: 'Target platforms in JSON list syntax'

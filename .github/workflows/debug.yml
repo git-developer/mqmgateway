@@ -48,13 +48,14 @@ jobs:
           result-encoding: string
           script: |
             const prefix = 'buildarg-';
-            return JSON.stringify(Object.entries(process.env)
+            JSON.stringify(Object.entries(process.env)
               .filter(([key, value]) => key.startsWith(prefix))
               .map(([key, value]) =>
                 key.replace(prefix, '')
                    .toUpperCase()
                    .replaceAll(/[^\w]/g, '_')
                    .concat('=', value)));
+            return JSON.stringify(Object.entries(process.env));
       - run: echo "${{steps.step1.outputs.result}}"
   job2:
     runs-on: ubuntu-latest

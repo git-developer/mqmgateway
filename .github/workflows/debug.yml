@@ -40,7 +40,7 @@ jobs:
       - uses: actions/github-script@v6
         id: step1
         with:
-          result-encoding: string
+#          result-encoding: string
           script: |
             const prefix = 'buildarg-';
             return JSON.stringify(Object.entries(JSON.parse(process.env.INPUTS))

@@ -2,8 +2,10 @@ name: CI Build
 
 on:
   push:
-    - main
-    - wip/push-demo
+    branches:
+      - main
+    tags:
+      - wip/push-demo
 
 jobs:
   ci-build:

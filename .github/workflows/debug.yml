@@ -45,11 +45,12 @@ jobs:
       - uses: actions/github-script@v6
         id: step1
         env:
-          DATA: ${{ inputs }}
+          DATA: ${{ fromJSON(inputs) }}
         with:
           result-encoding: string
           script: |
             const prefix = 'buildarg-';
+            return JSON.stringify(Object.entries(process.env));
             JSON.stringify(Object.entries(process.env)
               .filter(([key, value]) => key.startsWith(prefix))
               .map(([key, value]) =>
@@ -57,7 +58,6 @@ jobs:
                    .toUpperCase()
                    .replaceAll(/[^\w]/g, '_')
                    .concat('=', value)));
-            return JSON.stringify(Object.entries(process.env));
       - run: echo "${{steps.step1.outputs.result}}"
   job2:
     runs-on: ubuntu-latest

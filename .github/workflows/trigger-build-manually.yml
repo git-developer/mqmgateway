@@ -45,7 +45,7 @@ jobs:
     outputs:
       result: ${{ steps.to-env.outputs.result }}
     steps:
-      - uses: actions/checkout@v3
+#      - uses: actions/checkout@v3
       - id: to-env
         uses: ./.github/actions/to-env
         with:

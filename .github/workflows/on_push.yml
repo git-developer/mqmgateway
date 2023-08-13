@@ -9,4 +9,8 @@ on:
 
 jobs:
   ci-build:
+    permissions:
+      packages: write
     uses: ./.github/workflows/mqmgateway.yml
+    with:
+      registry: GitHub Container Registry

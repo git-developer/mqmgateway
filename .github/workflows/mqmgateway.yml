@@ -66,6 +66,7 @@ on:
 
 jobs:
   prepare:
+    name: Prepare build args
     runs-on: ubuntu-latest
     outputs:
       result: ${{ steps.to-env.outputs.result }}
@@ -78,6 +79,7 @@ jobs:
           properties: ${{ toJSON(inputs) }}
 
   build-multi-platform-to-ghcr:
+    name: Trigger GHCR build
     if: inputs.registry == 'GitHub Container Registry' || (!inputs.registry && !vars.DOCKERHUB_USERNAME)
     permissions:
       packages: write
@@ -88,6 +90,7 @@ jobs:
       build-args:     ${{ needs.prepare.outputs.result }}
 
   build-multi-platform-to-dockerhub:
+    name: Trigger DockerHub build
     if: inputs.registry == 'Docker Hub' || (!inputs.registry && vars.DOCKERHUB_USERNAME)
     uses: git-developer/github-actions/.github/workflows/build-dockerhub.yml@v1
     needs: prepare

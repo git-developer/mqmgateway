@@ -1,0 +1,17 @@
+name: CI Build
+
+on:
+  push:
+    branches:
+      - main
+      - feature/docker
+    tags:
+      - '*'
+
+jobs:
+  ci-build:
+    permissions:
+      packages: write
+    uses: ./.github/workflows/mqmgateway.yml
+    with:
+      registry: GitHub Container Registry

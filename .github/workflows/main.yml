@@ -115,7 +115,7 @@ jobs:
         run: |
           find * -maxdepth 0 -type d | while read -r suffix; do
             cd "/tmp/digests/${suffix}"
-            docker buildx imagetools create $(jq -cr '.tags | map("-t " + . + "-${suffix}") | join(" ")' <<< "$DOCKER_METADATA_OUTPUT_JSON") \
+            docker buildx imagetools create $(jq --arg suffix "${suffix}" -cr '.tags | map("-t " + . + "-" + $suffix) | join(" ")' <<< "$DOCKER_METADATA_OUTPUT_JSON") \
               $(printf '${{ env.IMAGE_NAME }}@sha256:%s ' *)
           done
       -

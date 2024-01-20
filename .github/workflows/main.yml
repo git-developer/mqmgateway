@@ -2,8 +2,10 @@ name: ci
 
 on:
   push:
+    branches:
+      - "feature/ci*"
     tags:
-      - "1.2.0"
+      - "*"
 
 env:
   REGISTRY: ghcr.io
@@ -25,6 +27,9 @@ jobs:
           - linux/arm/v7
           - linux/arm64
           - linux/i386
+        base_image:
+          - alpine:3.19
+          - debian:12-slim
     steps:
       -
         name: Checkout
@@ -58,13 +63,16 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
           outputs: type=image,name=${{ env.IMAGE_NAME }},push-by-digest=true,name-canonical=true,push=true
           build-args: |
+            BASE_IMAGE=${{ matrix.base_image }}
             MQM_TEST_DEFAULT_WAIT_MS=400
       -
         name: Export digest
         run: |
-          mkdir -p /tmp/digests
+          os_id="$(printf '%s' "${{ matrix.base_image }}" | tr -c '[:alnum:]._-' -)"
+          os_id="${os_id%-slim}"
+          mkdir -p "/tmp/digests/${os_id}"
           digest="${{ steps.build.outputs.digest }}"
-          touch "/tmp/digests/${digest#sha256:}"
+          touch "/tmp/digests/${os_id}/${digest#sha256:}"
       -
         name: Upload digest
         uses: actions/upload-artifact@v3
@@ -102,12 +110,20 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
       -
-        name: Create manifest list and push
+        name: Create manifest lists and push
         working-directory: /tmp/digests
         run: |
-          docker buildx imagetools create $(jq -cr '.tags | map("-t " + .) | join(" ")' <<< "$DOCKER_METADATA_OUTPUT_JSON") \
-            $(printf '${{ env.IMAGE_NAME }}@sha256:%s ' *)
+          find * -maxdepth 0 -type d | while read -r suffix; do
+            cd "/tmp/digests/${suffix}"
+            docker buildx imagetools create $(jq --arg suffix "${suffix}" \
+              -cr '.tags | map("-t " + . + "-" + $suffix) | join(" ")' \
+              <<< "$DOCKER_METADATA_OUTPUT_JSON") \
+              $(printf '${{ env.IMAGE_NAME }}@sha256:%s ' *)
+          done
       -
         name: Inspect image
+        working-directory: /tmp/digests
         run: |
-          docker buildx imagetools inspect ${{ env.IMAGE_NAME }}:${{ steps.meta.outputs.version }}
+          find * -maxdepth 0 -type d | while read -r suffix; do
+            docker buildx imagetools inspect "${{ env.IMAGE_NAME }}:${{ steps.meta.outputs.version }}-${suffix}"
+          done

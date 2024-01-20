@@ -1,7 +1,18 @@
-ARG ALPINE_VERSION=latest
-FROM alpine:${ALPINE_VERSION} AS builder
-RUN apk update && apk add --no-cache \
-      git build-base cmake pkgconf boost-dev libmodbus-dev mosquitto-dev yaml-cpp-dev rapidjson-dev catch2
+ARG BASE_IMAGE=alpine
+FROM ${BASE_IMAGE} AS builder
+RUN case "$(sed -nE 's/^ID=(.+)$/\1/p' /etc/os-release)" in \
+      debian) \
+        apt-get update && apt-get install -y \
+          git build-essential cmake pkgconf wget \
+          libboost-dev libboost-log-dev libboost-program-options-dev \
+          libmodbus-dev mosquitto-dev libmosquitto-dev libmosquittopp-dev \
+          libyaml-cpp-dev rapidjson-dev catch2 \
+      ;; \
+      alpine) \
+        apk update && apk add --no-cache \
+          git build-base cmake pkgconf boost-dev libmodbus-dev mosquitto-dev yaml-cpp-dev rapidjson-dev catch2 \
+      ;; \
+    esac
 
 ARG EXPRTK_URL=https://github.com/ArashPartow/exprtk/raw/master/exprtk.hpp
 RUN if [ "${EXPRTK_URL-}" ]; then \
@@ -24,13 +35,25 @@ ARG MQM_TEST_LOGLEVEL=3
 RUN if [ -z "${MQM_TEST_SKIP}" ]; then cd unittests; ./tests || [ "${MQM_TEST_ALLOW_FAILURE}" = "true" ]; fi
 RUN make install
 
-FROM alpine:${ALPINE_VERSION} AS runtime
+FROM ${BASE_IMAGE} AS runtime
 COPY --from=builder /opt/mqmgateway/install/ /usr/
 COPY --from=builder /opt/mqmgateway/source/modmqttd/config.template.yaml /etc/modmqttd/config.yaml
-RUN apk update && apk add --no-cache \
-  $(apk search -e boost*-log | grep -o '^boost.*-log') \
-  $(apk search -e boost*-program_options | grep -o '^boost.*-program_options') \
-  libmodbus mosquitto yaml-cpp && \
-  apk cache purge
+
+RUN case "$(sed -nE 's/^ID=(.+)$/\1/p' /etc/os-release)" in \
+      debian) \
+        apt-get update && apt-get install -y --no-install-recommends \
+          ^libboost-log[0-9.]+$ \
+          ^libboost-program-options[0-9.]+$ \
+          libmodbus[0-9.]+ mosquitto libyaml-cpp[0-9.]+ && \
+        apt-get clean \
+      ;; \
+      alpine) \
+        apk update && apk add --no-cache \
+          $(apk search -e boost*-log | grep -o '^boost.*-log') \
+          $(apk search -e boost*-program_options | grep -o '^boost.*-program_options') \
+          libmodbus mosquitto yaml-cpp && \
+        apk cache purge \
+      ;; \
+    esac
 ENTRYPOINT [ "/usr/bin/modmqttd" ]
 CMD [ "--config", "/etc/modmqttd/config.yaml" ]

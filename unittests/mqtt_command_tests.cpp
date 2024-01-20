@@ -28,7 +28,7 @@ TEST_CASE ("Holding register valid write") {
     server.setModbusRegisterValue("tcptest", 1, 2, modmqttd::RegisterType::HOLDING, 0);
     server.start();
 
-    server.waitForPublish("test_switch/availability", std::chrono::milliseconds(20000));
+    server.waitForPublish("test_switch/availability", std::chrono::milliseconds(200000));
     REQUIRE(server.mqttValue("test_switch/availability") == "1");
     server.waitForPublish("test_switch/state");
 

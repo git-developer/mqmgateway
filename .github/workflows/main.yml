@@ -64,7 +64,7 @@ jobs:
           outputs: type=image,name=${{ env.IMAGE_NAME }},push-by-digest=true,name-canonical=true,push=true
           build-args: |
             BASE_IMAGE=${{ matrix.base_image }}
-            MQM_TEST_DEFAULT_WAIT_MS=500
+            MQM_TEST_DEFAULT_WAIT_MS=700
       -
         name: Export digest
         run: |

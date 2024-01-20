@@ -24,9 +24,9 @@ jobs:
         platform:
           - linux/amd64
           - linux/arm/v6
-          - linux/arm/v7
-          - linux/arm64
-          - linux/i386
+#          - linux/arm/v7
+#          - linux/arm64
+#          - linux/i386
         base_image:
           - alpine:3.19
           - debian:12-slim

@@ -24,9 +24,9 @@ jobs:
         platform:
           - linux/amd64
           - linux/arm/v6
-#          - linux/arm/v7
-#          - linux/arm64
-#          - linux/i386
+          - linux/arm/v7
+          - linux/arm64
+          - linux/i386
         base_image:
           - alpine:3.19
           - debian:12-slim
@@ -64,7 +64,7 @@ jobs:
           outputs: type=image,name=${{ env.IMAGE_NAME }},push-by-digest=true,name-canonical=true,push=true
           build-args: |
             BASE_IMAGE=${{ matrix.base_image }}
-            MQM_TEST_DEFAULT_WAIT_MS=5000
+            MQM_TEST_DEFAULT_WAIT_MS=400
       -
         name: Export digest
         run: |
@@ -115,7 +115,9 @@ jobs:
         run: |
           find * -maxdepth 0 -type d | while read -r suffix; do
             cd "/tmp/digests/${suffix}"
-            docker buildx imagetools create $(jq --arg suffix "${suffix}" -cr '.tags | map("-t " + . + "-" + $suffix) | join(" ")' <<< "$DOCKER_METADATA_OUTPUT_JSON") \
+            docker buildx imagetools create $(jq --arg suffix "${suffix}" \
+              -cr '.tags | map("-t " + . + "-" + $suffix) | join(" ")' \
+              <<< "$DOCKER_METADATA_OUTPUT_JSON") \
               $(printf '${{ env.IMAGE_NAME }}@sha256:%s ' *)
           done
       -

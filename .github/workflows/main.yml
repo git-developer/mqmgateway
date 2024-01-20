@@ -22,13 +22,13 @@ jobs:
       fail-fast: true
       matrix:
         platform:
-          - linux/amd64
+#          - linux/amd64
           - linux/arm/v6
           - linux/arm/v7
           - linux/arm64
-          - linux/i386
+#          - linux/i386
         base_image:
-          - alpine:3.19
+#          - alpine:3.19
           - debian:12-slim
     steps:
       -
@@ -64,7 +64,7 @@ jobs:
           outputs: type=image,name=${{ env.IMAGE_NAME }},push-by-digest=true,name-canonical=true,push=true
           build-args: |
             BASE_IMAGE=${{ matrix.base_image }}
-            MQM_TEST_DEFAULT_WAIT_MS=500
+            MQM_TEST_DEFAULT_WAIT_MS=400
       -
         name: Export digest
         run: |

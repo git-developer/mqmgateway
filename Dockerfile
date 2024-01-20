@@ -7,6 +7,7 @@ RUN case "$(sed -nE 's/^ID=(.+)$/\1/p' /etc/os-release)" in \
           libboost-dev libboost-log-dev libboost-program-options-dev \
           libmodbus-dev mosquitto-dev libmosquitto-dev libmosquittopp-dev \
           libyaml-cpp-dev rapidjson-dev catch2 \
+        && test -e /usr/include/catch2/catch.hpp || ln -s catch_all.hpp /usr/include/catch2/catch.hpp \
       ;; \
       alpine) \
         apk update && apk add --no-cache \

@@ -68,7 +68,7 @@ jobs:
       -
         name: Export digest
         run: |
-          os_id="$(printf "${{ matrix.base_image }}" | tr -c '[:alnum:]' -)"
+          os_id="$(printf '%s' "${{ matrix.base_image }}" | tr -c '[:alnum:]._-' -)"
           os_id="${os_id%-slim}"
           mkdir -p "/tmp/digests/${os_id}"
           digest="${{ steps.build.outputs.digest }}"

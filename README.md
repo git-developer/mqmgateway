@@ -102,13 +102,18 @@ Modbus network configuration parameters are listed below:
 
   Unique name for network - referenced in mqtt mappings
 
-* **response_timeout** (optional, default ?)
+* **response_timeout** (optional, default 1s)
 
-  A timeout interval used to wait for modbus response. This setting is propagated down mqtt object and register definitions. See modbus_set_response_timeout(3)
+  A default timeout interval used to wait for modbus response. See modbus_set_response_timeout(3) for details.
 
-* **response_data_timeout** (optional, default ?)
+* **response_data_timeout** (optional, default 1s)
 
-  A timeout interval used to wait for data when reading response from modbus device. See modbus_set_byte_timeout(3).
+  A default timeout interval used to wait for data when reading response from modbus device. See modbus_set_byte_timeout(3) for details.
+
+* **min_delay_before_poll** (optional, default 0)
+
+  After modbus read register reply is received from a slave, wait at least this time before issuing next read register request to the same or any other
+  slave on this newtork.
 
 * RTU device settings
   For details, see modbus_new_rtu(3)
@@ -155,9 +160,44 @@ Modbus network configuration parameters are listed below:
 
     TCP port of a device
 
-* **poll_groups**
+* **slaves** (optional)
+  An optional slave list with modbus specific configuration like register groups to poll (see poll groups below) and timing constraints
 
-    An optional list of modbus register address ranges that will be polled with a single modbus_read_registers(3) call.
+  * **address** (required)
+
+      Modbus slave address 
+
+  * **poll_groups** (optional)
+
+      An optional list of modbus register address ranges that will be polled with a single modbus_read_registers(3) call.
+
+      An example poll group definition to poll 20 INPUT registers at once:
+
+        poll_groups:
+          - register: 1
+            register_type: input
+            count: 20
+
+      This definition allows to use single modbus read call to read all data that is needed 
+      for multiple topics declared in MQTT section. If there are no topics that use modbus data from 
+      a poll group then that poll group is ignored.
+
+      If MQTT topic uses its own register range and this range overlaps a poll group like this:
+
+        slaves:
+          - address: 1
+            poll_groups:
+              - register: 1
+                register_type: input
+                count: 20
+        […]
+        state:
+          - name: humidity
+            register: 1.18
+            register_type: input
+            count 5
+      
+      then poll group will be extended to count=23 to issue a single call for reading all data needed for `humidity` topic in single modus read call.
 
 ## MQTT section
 
@@ -206,7 +246,7 @@ A list of topics where modbus values are published to MQTT broker and subscribed
 
     - *commands* - for writing to modbus registers
     - *state* - for reading modbus registers
-    - *avaiability* - for checking if modbus data is available.
+    - *availability* - for checking if modbus data is available.
 
 ### Topic default values:
 
@@ -459,10 +499,48 @@ MQMGateway contains *std* library with basic converters ready to use:
       - low_first (optional)
 
 
-    Divides modbus value by divisor and rounds to (precision) digits after the decimal.
-    Supports int16 in single register and int32 value in two registers.
+    Divides value by divisor and rounds to (precision) digits after the decimal.
+    For modbus data supports uint16 in single register and uint32 value in two registers.
     For int32 mode the first modbus register holds higher byte, the second holds lower byte if 'low first' is not passed.
     With 'low_first' argument the first modbus register holds lower byte, the second holds higher byte.
+
+  * **multiply**
+
+    Usage: state, command
+
+    Arguments:
+      - multipler (required)
+      - precision (optional)
+      - low_first (optional)
+
+    Multiples value. See 'divide' for description of 'precision' and 'low_first' arguments.
+
+  * **int8**
+
+    Usage: state
+
+    Arguments:
+     - first (optional)
+
+    Parses and writes modbus register data as signed int8. Second byte is parsed by default, pass `first` as argument to read first byte.
+
+
+  * **uint8**
+
+    Usage: state
+
+    Arguments:
+     - first (optional)
+
+    Parses and writes modbus register data as unsigned int8. Second byte is parsed by default, pass `first` as argument to read first byte.
+
+
+  * **int16**
+
+    Usage: state, command
+
+    Parses and writes modbus register data as signed int16.
+
 
   * **int32**
 
@@ -485,13 +563,24 @@ MQMGateway contains *std* library with basic converters ready to use:
 
     Same as int32, but modbus registers are interpreted as unsingned int32.
 
-
-  * **uint16**
+  * **float**
 
     Usage: state, command
+    Arguments:
+      - precision (optional)
+      - low_first, high_first (optional)
+      - swap_bytes (optional)
 
-    Parses and writes modbus register data as unsigned int.
+    Combines two modbus registers into one 32bit float or writes mqtt value to two modbus registers as float.
+    Without arguments the first modbus register holds higher byte, the second holds lower byte.
+    With 'low_first' argument the first modbus register holds lower byte, the second holds higher byte.
 
+    If 'swap_bytes' is defined, then bytes in both registers are swapped before reading and writing. Float value stored on four bytes _ABCD_ will be written to modbus registers R0, R1 as:
+
+    - no arguments or high_first: R0=_AB_, R1=_CD_
+    - low_first: R0=_CD_, R1=_AB_
+    - high_first, swap_bytes: R0=_BA_, R1=_DC_
+    - low_first, swap_bytes: R0=_DC_, R1=_BA_
 
   * **bitmask**
 

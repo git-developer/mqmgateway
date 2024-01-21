@@ -3,7 +3,7 @@
 #include "libmodmqttsrv/modbus_messages.hpp"
 #include "libmodmqttsrv/modbus_context.hpp"
 #include "libmodmqttsrv/debugtools.hpp"
-#include "catch2/catch.hpp"
+#include "catch2/catch_all.hpp"
 
 #include <thread>
 #include <iostream>
@@ -194,7 +194,7 @@ MockedModbusContext::readModbusRegisters(int slaveId, const modmqttd::RegisterPo
     if (mInternalOperation)
         BOOST_LOG_SEV(log, modmqttd::Log::info) << "MODBUS: " << mNetworkName
             << "." << it->second.mId << "." << regData.mRegister
-            << " READED: " << modmqttd::DebugTools::registersToStr(ret);
+            << " READ: " << modmqttd::DebugTools::registersToStr(ret);
 
     mInternalOperation = false;
     return ret;
@@ -277,7 +277,7 @@ MockedModbusFactory::getModbusRegisterValue(const char* network, int slaveId, in
     regNum--;
     std::shared_ptr<MockedModbusContext> ctx = getOrCreateContext(network);
     ctx->mInternalOperation = true;
-    modmqttd::RegisterPoll poll(regNum, regtype, 1, 0);
+    modmqttd::RegisterPoll poll(regNum, regtype, 1, std::chrono::milliseconds(0));
 
     auto vals = ctx->readModbusRegisters(slaveId, poll);
     return vals[0];

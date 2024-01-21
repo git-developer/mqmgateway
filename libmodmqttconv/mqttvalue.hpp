@@ -2,6 +2,8 @@
 
 #include <cstring>
 #include <memory>
+#include <sstream>
+#include <iostream>
 #include "convexception.hpp"
 
 class MqttValue {
@@ -16,6 +18,8 @@ class MqttValue {
             INT64 = 3
         } SourceType;
 
+        static constexpr int NO_PRECISION = -1;
+
         static MqttValue fromInt(int32_t val) {
             return MqttValue(val);
         }
@@ -24,7 +28,7 @@ class MqttValue {
             return MqttValue(val);
         }
 
-        static MqttValue fromDouble(double val, int precision) {
+        static MqttValue fromDouble(double val, int precision = NO_PRECISION) {
             return MqttValue(val, precision);
         }
 
@@ -44,7 +48,7 @@ class MqttValue {
             setInt64(val);
         }
 
-        MqttValue(double val, int precision) {
+        MqttValue(double val, int precision = NO_PRECISION) {
             setDouble(val, precision);
         }
 
@@ -63,8 +67,9 @@ class MqttValue {
         }
 
         void setDouble(double val, int precision) {
-            mValue.v_double = precision < 0 ? val : round(val, precision);
+            mValue.v_double = val;
             mType = SourceType::DOUBLE;
+            mDoublePrecision = precision;
         }
 
         void setInt(int32_t val) {
@@ -104,7 +109,7 @@ class MqttValue {
                     std::string strval(getString());
                     double ret = std::strtod(strval.c_str(), &endptr);
                     if (endptr == nullptr || *endptr != '\0') {
-                        throw ConvException(std::string("Cannot convert") + strval + " to double");
+                        throw ConvException(std::string("Cannot convert ") + strval + " to double");
                     }
                     return ret;
                 }
@@ -125,7 +130,7 @@ class MqttValue {
                     std::string strval(getString());
                     int32_t ret = std::strtol(strval.c_str(), &endptr, 10);
                     if (endptr == nullptr || *endptr != '\0') {
-                        throw ConvException(std::string("Cannot convert") + strval + " to int");
+                        throw ConvException(std::string("Cannot convert ") + strval + " to int");
                     }
                     return ret;
                 }
@@ -146,7 +151,7 @@ class MqttValue {
                     std::string strval(getString());
                     int64_t ret = std::strtoll(strval.c_str(), &endptr, 10);
                     if (endptr == nullptr || *endptr != '\0') {
-                        throw ConvException(std::string("Cannot convert") + strval + " to int64");
+                        throw ConvException(std::string("Cannot convert ") + strval + " to int64");
                     }
                     return ret;
                 }
@@ -185,6 +190,7 @@ class MqttValue {
         }
 
         SourceType getSourceType() const { return mType; }
+        int getDoublePrecision() const { return mDoublePrecision; }
 
     private:
         /**
@@ -199,35 +205,25 @@ class MqttValue {
         Variant mValue;
         std::shared_ptr<void> mBinaryValue;
         size_t mBinarySize;
+        int mDoublePrecision = -1;
         SourceType mType;
 
-        /**
-         * round double value to decimal_digits for
-         * string formatting
-         */
-        static double round(double value, int precision) {
-            double divisor = pow(10, precision);
-            return std::round(value * divisor) / divisor;
+        // https://stackoverflow.com/questions/33125779/format-double-value-in-c
+        std::string format(double value) const {
+
+            double intpart;
+            modf(value, &intpart);
+
+            if (intpart == value && mDoublePrecision == NO_PRECISION)
+                return std::to_string(int64_t(intpart));
+
+            std::stringstream sstream;
+            sstream.setf(std::ios::fixed);
+
+            if (mDoublePrecision != -1)
+                sstream.precision(mDoublePrecision);
+
+            sstream << value;
+            return sstream.str();
         }
-
-        //https://codereview.stackexchange.com/questions/90565/converting-a-double-to-a-stdstring-without-scientific-notation
-        static std::string format(double value) {
-            std::string str = std::to_string(value);
-
-            // Remove padding
-            // This must be done in two steps because of numbers like 700.00
-            if (str.find('.') != std::string::npos) {
-                removeTrailing('0', str);
-                removeTrailing('.', str);
-            }
-            return str;
-        }
-
-       static void removeTrailing(char c, std::string& str) {
-            size_t pos = str.find_last_not_of(c);
-            if (pos != std::string::npos) {
-                str.erase(pos + 1);
-            }
-       }
-
 };

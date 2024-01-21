@@ -21,6 +21,8 @@ add_library(modmqttsrv
     modbus_messages.hpp
     modbus_scheduler.cpp
     modbus_scheduler.hpp
+    modbus_slave.cpp
+    modbus_slave.hpp
     modbus_thread.cpp
     modbus_thread.hpp
     modbus_types.hpp
@@ -32,8 +34,10 @@ add_library(modmqttsrv
     mqttclient.hpp
     mqttobject.cpp
     mqttobject.hpp
+    queue_item.hpp
     register_poll.cpp
     register_poll.hpp
+    yaml_converters.hpp
 )
 
 target_include_directories (modmqttsrv PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})

@@ -1,4 +1,4 @@
-#include "catch2/catch.hpp"
+#include "catch2/catch_all.hpp"
 #include "mockedserver.hpp"
 #include "jsonutils.hpp"
 #include "defaults.hpp"
@@ -14,13 +14,15 @@ modbus:
     - name: tcptest
       address: localhost
       port: 501
-      poll_groups:
-        - register: 1.1
-          register_type: input
-          count: 10
-        - register: 1.20
-          register_type: input
-          count: 5
+      slaves:
+        - address: 1
+          poll_groups:
+            - register: 1
+              register_type: input
+              count: 10
+            - register: 20
+              register_type: input
+              count: 5
 mqtt:
   client_id: mqtt_test
   refresh: 1s
@@ -88,10 +90,12 @@ modbus:
     - name: tcptest
       address: localhost
       port: 501
-      poll_groups:
-        - register: 1.1
-          register_type: input
-          count: 2
+      slaves:
+        - address: 1
+          poll_groups:
+            - register: 1
+              register_type: input
+              count: 2
 mqtt:
   client_id: mqtt_test
   refresh: 10ms
@@ -126,5 +130,69 @@ TEST_CASE ("Unchanged state should not be published when pulled as a pull group"
     server.stop();
 
     server.requirePublishCount("second_state/state", 1);
+}
+
+
+TEST_CASE ("Availablity should be changed for all registers in poll group") {
+    MockedModMqttServerThread server(config2);
+    server.setModbusRegisterValue("tcptest", 1, 1, modmqttd::RegisterType::INPUT, 1);
+    server.setModbusRegisterValue("tcptest", 1, 2, modmqttd::RegisterType::INPUT, 2);
+
+    server.start();
+
+    // initial publish
+    server.waitForPublish("first_state/availability");
+    REQUIRE(server.mqttValue("first_state/availability") == "1");
+    server.waitForPublish("second_state/availability");
+    REQUIRE(server.mqttValue("first_state/availability") == "1");
+
+    server.setModbusRegisterValue("tcptest", 1, 1, modmqttd::RegisterType::INPUT, 10);
+    server.setModbusRegisterReadError("tcptest", 1, 1, modmqttd::RegisterType::INPUT);
+
+    //wait for 4sec for three read attempts
+    server.waitForPublish("first_state/availability", defaultWaitTime(std::chrono::milliseconds(4000)));
+    REQUIRE(server.mqttValue("first_state/availability") == "0");
+
+    server.waitForPublish("second_state/availability", defaultWaitTime(std::chrono::milliseconds(4000)));
+    REQUIRE(server.mqttValue("second_state/availability") == "0");
+
+    server.stop();
+}
+
+
+static const std::string old_valid_pg_config = R"(
+modmqttd:
+modbus:
+  networks:
+    - name: tcptest
+      address: localhost
+      port: 501
+      poll_groups:
+        - register: 1.1
+          register_type: input
+          count: 2
+mqtt:
+  client_id: mqtt_test
+  refresh: 10ms
+  broker:
+    host: localhost
+  objects:
+    - topic: first_state
+      state:
+        register: tcptest.1.1
+        register_type: input
+)";
+
+TEST_CASE ("Old style poll groups should work as usual") {
+    MockedModMqttServerThread server(old_valid_pg_config);
+    server.setModbusRegisterValue("tcptest", 1, 1, modmqttd::RegisterType::INPUT, 1);
+
+    server.start();
+
+    // initial publish
+    server.waitForPublish("first_state/state");
+    REQUIRE(server.mqttValue("first_state/state") == "1");
+
+    server.stop();
 }
 

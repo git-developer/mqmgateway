@@ -6,6 +6,7 @@
 #include "queue_item.hpp"
 #include "modbus_messages.hpp"
 #include "modbus_scheduler.hpp"
+#include "modbus_slave.hpp"
 #include "imodbuscontext.hpp"
 
 namespace modmqttd {
@@ -21,8 +22,16 @@ class ModbusThread {
         moodycamel::BlockingReaderWriterQueue<QueueItem>& mToModbusQueue;
         moodycamel::BlockingReaderWriterQueue<QueueItem>& mFromModbusQueue;
 
+        // global config
         std::string mNetworkName;
+        std::chrono::steady_clock::duration mMinDelayBeforePoll = std::chrono::steady_clock::duration::zero();
+
+        // slave config
+        std::map<int, ModbusSlaveConfig> mSlaves;
+
+        //poll specs from slave config merged with mqtt section
         std::map<int, std::vector<std::shared_ptr<RegisterPoll>>> mRegisters;
+
         bool mShouldRun = true;
         // true if mqtt becomes online
         // and we need to refresh all registers
@@ -41,7 +50,7 @@ class ModbusThread {
 
         bool hasRegisters() const;
 
-        void dispatchMessages(const QueueItem& readed);
+        void dispatchMessages(const QueueItem& read);
         void sendMessage(const QueueItem& item);
 
         void handleRegisterReadError(int slaveId, RegisterPoll& regPoll, const char* errorMessage);

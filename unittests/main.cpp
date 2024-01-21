@@ -1,6 +1,6 @@
 #define CATCH_CONFIG_CONSOLE_WIDTH 300
 #define CATCH_CONFIG_RUNNER
-#include "catch2/catch.hpp"
+#include "catch2/catch_all.hpp"
 #include "libmodmqttsrv/logging.hpp"
 
 int main( int argc, char* argv[] ) {
@@ -13,7 +13,7 @@ int main( int argc, char* argv[] ) {
 
   int result = Catch::Session().run( argc, argv );
 
-  // global clean-up...
+  // global clean-up…
 
   return result;
 }

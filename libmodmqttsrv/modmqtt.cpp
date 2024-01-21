@@ -12,7 +12,9 @@
 #include "mqttclient.hpp"
 #include "modbus_messages.hpp"
 #include "modbus_context.hpp"
+#include "modbus_slave.hpp"
 #include "conv_name_parser.hpp"
+#include "yaml_converters.hpp"
 
 #include <csignal>
 #include <iostream>
@@ -162,7 +164,7 @@ ModMqtt::init(const YAML::Node& config) {
             [&netname](const std::shared_ptr<ModbusClient>& client) -> bool { return client->mName == netname; }
         );
         if (client == mModbusClients.end()) {
-            BOOST_LOG_SEV(log, Log::error) << "Modbus client for network [" << netname << "] not initailized, ignoring specification";
+            BOOST_LOG_SEV(log, Log::error) << "Modbus client for network [" << netname << "] not initialized, ignoring specification";
         } else {
             BOOST_LOG_SEV(log, Log::debug) << "Sending register specification to modbus thread for network " << netname;
             (*client)->mToModbusQueue.enqueue(QueueItem::create(*sit));
@@ -268,19 +270,19 @@ void ModMqtt::initBroker(const YAML::Node& config) {
     BOOST_LOG_SEV(log, Log::debug) << "Broker configuration initialized";
 }
 
-MsgRegisterPollSpecification
-ModMqtt::readModbusPollGroups(const std::string& modbus_network, const YAML::Node& groups) {
-    MsgRegisterPollSpecification spec(modbus_network);
+std::vector<modmqttd::MsgRegisterPoll>
+ModMqtt::readModbusPollGroups(const std::string& modbus_network, int default_slave, const YAML::Node& groups) {
+    std::vector<modmqttd::MsgRegisterPoll> ret;
 
     if (!groups.IsDefined())
-        return spec;
+        return ret;
 
     if (!groups.IsSequence())
         throw ConfigurationException(groups.Mark(), "modbus network poll_groups must be a list");
 
     for(std::size_t i = 0; i < groups.size(); i++) {
         const YAML::Node& group(groups[i]);
-        RegisterConfigName reg(group, modbus_network, -1);
+        RegisterConfigName reg(group, modbus_network, default_slave);
         int count = ConfigTools::readRequiredValue<int>(group, "count");
 
         MsgRegisterPoll poll(reg.mRegisterNumber, count);
@@ -290,10 +292,10 @@ ModMqtt::readModbusPollGroups(const std::string& modbus_network, const YAML::Nod
         // we do not set mRefreshMsec here, it should be merged
         // from mqtt overlapping groups
         // if no mqtt groups overlap, then modbus client will drop this poll group
-        spec.mRegisters.push_back(poll);
+        ret.push_back(poll);
     }
 
-    return spec;
+    return ret;
 }
 
 
@@ -318,38 +320,48 @@ ModMqtt::initModbusClients(const YAML::Node& config) {
         const YAML::Node& network(networks[i]);
         ModbusNetworkConfig modbus_config(network);
 
+        //initialize modbus thread
         std::shared_ptr<ModbusClient> modbus(new ModbusClient());
         modbus->init(modbus_config);
         mModbusClients.push_back(modbus);
 
-        MsgRegisterPollSpecification spec(readModbusPollGroups(modbus_config.mName, network["poll_groups"]));
+        MsgRegisterPollSpecification spec(modbus_config.mName);
+        // send modbus slave configurations
+        // for defined slaves
+        const YAML::Node& slaves = network["slaves"];
+        if (slaves.IsDefined()) {
+
+            if (!slaves.IsSequence())
+                throw new ConfigurationException(slaves.Mark(), "slaves content should be a list");
+
+            for(std::size_t i = 0; i < slaves.size(); i++) {
+                const YAML::Node& slave(slaves[i]);
+                ModbusSlaveConfig slave_config(slave);
+                modbus->mToModbusQueue.enqueue(QueueItem::create(slave_config));
+
+                spec.merge(readModbusPollGroups(modbus_config.mName, slave_config.mAddress, slave["poll_groups"]));
+            }
+        }
+
+        const YAML::Node& old_groups(network["poll_groups"]);
+        if (old_groups.IsDefined()) {
+            BOOST_LOG_SEV(log, Log::warn) << "'network.poll_groups' are deprecated and will be removed in future releases. Please use 'slaves' section and define per-slave poll_groups instead";
+            spec.merge(readModbusPollGroups(modbus_config.mName, -1, old_groups));
+        }
         ret.push_back(spec);
     }
     mMqtt->setModbusClients(mModbusClients);
-    BOOST_LOG_SEV(log, Log::debug) << "Modbus clients initialized";
+    BOOST_LOG_SEV(log, Log::debug) << mModbusClients.size() << " modbus client(s) initialized";
     return ret;
 }
 
 bool
-ModMqtt::parseAndAddRefresh(std::stack<int>& values, const YAML::Node& data) {
-    std::string str;
-    if (!ConfigTools::readOptionalValue<std::string>(str, data, "refresh"))
+ModMqtt::parseAndAddRefresh(std::stack<std::chrono::milliseconds>& values, const YAML::Node& parent) {
+    std::chrono::milliseconds ts;
+    if (!ConfigTools::readOptionalValue<std::chrono::milliseconds>(ts, parent, "refresh"))
         return false;
 
-    std::regex re("([0-9]+)(ms|s|min)");
-    std::cmatch matches;
-
-    if (!std::regex_match(str.c_str(), matches, re))
-        throw ConfigurationException(data["refresh"].Mark(), "Invalid refresh time");
-
-    int value = std::stoi(matches[1]);
-    std::string unit = matches[2];
-    if (unit == "s")
-        value *= 1000;
-    else if (unit == "min")
-        value *= 1000 * 60;
-
-    values.push(value);
+    values.push(ts);
     return true;
 }
 
@@ -359,7 +371,7 @@ ModMqtt::readObjectState(
     const std::string& default_network,
     int default_slave,
     std::vector<MsgRegisterPollSpecification>& specs_out,
-    std::stack<int>& currentRefresh,
+    std::stack<std::chrono::milliseconds>& currentRefresh,
     const YAML::Node& state)
 {
     if (!state.IsDefined())
@@ -500,7 +512,7 @@ ModMqtt::readObjectStateNode(
     const std::string& default_network,
     int default_slave,
     std::vector<MsgRegisterPollSpecification>& specs_out,
-    std::stack<int>& currentRefresh,
+    std::stack<std::chrono::milliseconds>& currentRefresh,
     const std::string& stateName,
     const YAML::Node& node,
     bool isListMember
@@ -533,7 +545,7 @@ ModMqtt::readObjectAvailability(
     const std::string& default_network,
     int default_slave,
     std::vector<MsgRegisterPollSpecification>& specs_out,
-    std::stack<int>& currentRefresh,
+    std::stack<std::chrono::milliseconds>& currentRefresh,
     const YAML::Node& availability)
 {
     if (!availability.IsDefined())
@@ -579,8 +591,8 @@ ModMqtt::initObjects(const YAML::Node& config)
     std::vector<MqttObjectCommand> commands;
     std::vector<MqttObject> objects;
 
-    int defaultRefresh = 5000;
-    std::stack<int> currentRefresh;
+    auto defaultRefresh = std::chrono::milliseconds(5000);
+    std::stack<std::chrono::milliseconds> currentRefresh;
     currentRefresh.push(defaultRefresh);
 
     const YAML::Node& mqtt = config["mqtt"];
@@ -629,7 +641,7 @@ ModMqtt::initObjects(const YAML::Node& config)
 
 MqttObjectRegisterIdent
 ModMqtt::updateSpecification(
-    std::stack<int>& currentRefresh,
+    std::stack<std::chrono::milliseconds>& currentRefresh,
     const std::string& default_network,
     int default_slave,
     std::vector<MsgRegisterPollSpecification>& specs,
@@ -670,7 +682,7 @@ void ModMqtt::start() {
     // mosquitto does not use reconnect_delay_set
     // when doing inital connection. We also do not want to
     // process queues before connection to mqtt broker is
-    // estabilished - this will cause availability messages to be dropped.
+    // established - this will cause availability messages to be dropped.
 
     // TODO if broker is down and modbus is up then mQueues will grow forever and
     // memory allocated by queues will never be released. Add MsgStartPolling?
@@ -693,15 +705,15 @@ void ModMqtt::start() {
             int currentSignal = gSignalStatus;
             gSignalStatus = -1;
             if (currentSignal == SIGTERM) {
-                BOOST_LOG_SEV(log, Log::info) << "Got SIGTERM, exiting....";
+                BOOST_LOG_SEV(log, Log::info) << "Got SIGTERM, exiting…";
                 break;
             } else if (currentSignal == SIGHUP) {
-                //TODO reload configuratiion, reconect borker and
+                //TODO reload configuration, reconnect broker and
                 //create new list of modbus clients if needed
             }
             currentSignal = -1;
         } else if (gSignalStatus == 0) {
-            BOOST_LOG_SEV(log, Log::info) << "Got stop request, exiting....";
+            BOOST_LOG_SEV(log, Log::info) << "Got stop request, exiting…";
             break;
         }
     };
@@ -714,7 +726,7 @@ void ModMqtt::start() {
     }
 
     if (mMqtt->isConnected()) {
-        BOOST_LOG_SEV(log, Log::info) << "Publishing avaiability status 0 for all registers";
+        BOOST_LOG_SEV(log, Log::info) << "Publishing availability status 0 for all registers";
         for(std::vector<std::shared_ptr<ModbusClient>>::iterator client = mModbusClients.begin();
             client < mModbusClients.end(); client++)
         {
@@ -788,10 +800,8 @@ ModMqtt::waitForSignal() {
 void
 ModMqtt::waitForQueues() {
     std::unique_lock<std::mutex> lock(gQueueMutex);
-    while(!gHasMessages)
-        gHasMessagesCondition.wait(lock);
+    gHasMessagesCondition.wait(lock, []{ return gHasMessages;});
     gHasMessages = false;
-    lock.unlock();
 }
 
 void

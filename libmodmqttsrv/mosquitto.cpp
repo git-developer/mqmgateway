@@ -97,10 +97,17 @@ Mosquitto::Mosquitto() {
 void
 Mosquitto::connect(const MqttBrokerConfig& config) {
     BOOST_LOG_SEV(log, Log::info) << "Connecting to " << config.mHost << ":" << config.mPort;
-    int rc = mosquitto_connect_async(mMosq, config.mHost.c_str(),
-            config.mPort,
-            config.mKeepalive);
+
+    int rc = mosquitto_username_pw_set(mMosq, config.mUsername.c_str(), config.mPassword.c_str());
     throwOnCriticalError(rc);
+
+    rc = mosquitto_connect_async(
+        mMosq, config.mHost.c_str(),
+        config.mPort,
+        config.mKeepalive
+    );
+    throwOnCriticalError(rc);
+
     if(errno == EPROTO) {
         throw MosquittoException(std::strerror(errno));
     }
@@ -169,7 +176,7 @@ Mosquitto::on_disconnect(int rc) {
 
 void
 Mosquitto::on_connect(int rc) {
-    BOOST_LOG_SEV(log, Log::info) << "Connection estabilished";
+    BOOST_LOG_SEV(log, Log::info) << "Connection established";
     mOwner->onConnect();
 }
 

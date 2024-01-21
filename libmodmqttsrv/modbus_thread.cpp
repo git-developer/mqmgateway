@@ -20,6 +20,10 @@ ModbusThread::configure(const ModbusNetworkConfig& config) {
     mNetworkName = config.mName;
     mModbus = ModMqtt::getModbusFactory().getContext(config.mName);
     mModbus->init(config);
+    // if you experience read timeouts on RTU then increase
+    // min_delay_before_poll config value
+    mMinDelayBeforePoll = config.mMinDelayBeforePoll;
+    BOOST_LOG_SEV(log, Log::info) << "Minimum delay before poll set to " << std::chrono::duration_cast<std::chrono::milliseconds>(mMinDelayBeforePoll).count() << "ms";
 }
 
 void
@@ -85,7 +89,18 @@ ModbusThread::setPollSpecification(const MsgRegisterPollSpecification& spec) {
             mRegisters[it->mSlaveId].push_back(reg);
         }
     }
-    BOOST_LOG_SEV(log, Log::debug) << "Poll specification set, got " << mRegisters.size() << " slaves," << spec.mRegisters.size() << " registers to poll";
+    BOOST_LOG_SEV(log, Log::debug) << "Poll specification set, got " << mRegisters.size() << " slaves," << spec.mRegisters.size() << " registers to poll:";
+    for (auto sit = mRegisters.begin(); sit != mRegisters.end(); sit++) {
+        for (auto it = sit->second.begin(); it != sit->second.end(); it++) {
+
+            BOOST_LOG_SEV(log, Log::debug)
+            << mNetworkName
+            << ", slave " << sit->first
+            << ", register " << (*it)->mRegister << ":" << (*it)->mRegisterType
+            << ", count " << (*it)->getCount()
+            << ", poll every " <<  std::chrono::duration_cast<std::chrono::milliseconds>((*it)->mRefresh).count() << "ms";
+        }
+    }
 
     //now wait for MqttNetworkState(up)
 }
@@ -142,8 +157,8 @@ ModbusThread::processWrite(const MsgRegisterValues& msg) {
 }
 
 void
-ModbusThread::dispatchMessages(const QueueItem& readed) {
-    QueueItem item(readed);
+ModbusThread::dispatchMessages(const QueueItem& read) {
+    QueueItem item(read);
     bool gotItem = true;
     // WARNING: dispatch loop can be run from inside pollRegisters loop
     // when processing commands
@@ -161,8 +176,10 @@ ModbusThread::dispatchMessages(const QueueItem& readed) {
         } else if (item.isSameAs(typeid(MsgMqttNetworkState))) {
             std::unique_ptr<MsgMqttNetworkState> netstate(item.getData<MsgMqttNetworkState>());
             mShouldPoll = netstate->mIsUp;
+        } else if (item.isSameAs(typeid(ModbusSlaveConfig))) {
+            //no per-slave config attributes defined yet
         } else {
-            BOOST_LOG_SEV(log, Log::error) << "Unknown messsage received, ignoring";
+            BOOST_LOG_SEV(log, Log::error) << "Unknown message received, ignoring";
         }
         gotItem = mToModbusQueue.try_dequeue(item);
     } while(gotItem);
@@ -187,6 +204,7 @@ ModbusThread::run() {
         BOOST_LOG_SEV(log, Log::debug) << "Modbus thread started";
         const int maxReconnectTime = 60;
         std::chrono::steady_clock::duration waitDuration = std::chrono::steady_clock::duration::max();
+
         while(mShouldRun) {
             if (mModbus) {
                 if (!mModbus->isConnected()) {
@@ -223,6 +241,9 @@ ModbusThread::run() {
                         {
                             //this may call processCommands
                             pollRegisters(slave->first, slave->second);
+
+                            if (slave != toRefresh.end() && mMinDelayBeforePoll != std::chrono::milliseconds(0))
+                                std::this_thread::sleep_for(mMinDelayBeforePoll);
                         }
                         //decrease time to next poll by last poll time
                         if (toRefresh.size() != 0) {
@@ -251,6 +272,9 @@ ModbusThread::run() {
             //for next poll if we are exiting
             if (mShouldRun) {
                 QueueItem item;
+                if (waitDuration <= std::chrono::steady_clock::duration::zero() && mMinDelayBeforePoll != std::chrono::milliseconds(0)) {
+                    waitDuration = mMinDelayBeforePoll;
+                }
                 BOOST_LOG_SEV(log, Log::debug) << "Waiting " <<  std::chrono::duration_cast<std::chrono::milliseconds>(waitDuration).count() << "ms for messages";
                 if (!mToModbusQueue.wait_dequeue_timed(item, waitDuration))
                     continue;

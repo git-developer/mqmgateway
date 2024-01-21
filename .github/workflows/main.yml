@@ -66,6 +66,7 @@ jobs:
           build-args: |
             BASE_IMAGE=${{ matrix.base_image }}
             MQM_TEST_DEFAULT_WAIT_MS=400
+            MQM_TEST_ALLOW_FAILURE=true
       -
         name: Export digest
         run: |

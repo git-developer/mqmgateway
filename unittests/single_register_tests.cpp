@@ -77,7 +77,7 @@ mqtt:
 
         server.disconnectModbusSlave("tcptest", 1);
 
-        //max 4 sec for three register read attempts
+        //max 5 sec for three register read attempts
         server.waitForPublish("test_switch/availability", std::chrono::seconds(5));
         REQUIRE(server.mqttValue("test_switch/availability") == "0");
         server.stop();
